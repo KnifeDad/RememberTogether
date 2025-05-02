@@ -20,8 +20,8 @@ export const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-export const handleError = (error) => {
+export const handleError = error => {
   console.error('API Error:', error);
   // Add custom error handling logic here
   throw error;
-}; 
+};

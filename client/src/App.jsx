@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChakraProvider, Box } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
@@ -8,7 +8,7 @@ import { AuthProvider } from './context/AuthContext';
 
 // Create an Apollo Client instance
 const httpLink = createHttpLink({
-  uri: '/graphql',
+  uri: 'http://localhost:3001/graphql',
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -45,4 +45,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
