@@ -1,3 +1,4 @@
+// LoginForm.jsx
 import React, { useState } from 'react';
 import { FormControl, FormLabel, Input, Button, VStack, Alert, AlertIcon } from '@chakra-ui/react';
 import { useMutation } from '@apollo/client';
@@ -5,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { LOGIN_USER } from '../utils/mutation';
 
 function LoginForm({ onLoginSuccess }) {
-  const [formState, setFormState] = useState({ username: '', password: '' });
+  const [formState, setFormState] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const { login } = useAuth();
 
@@ -34,14 +35,15 @@ function LoginForm({ onLoginSuccess }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <VStack spacing={4} align="stretch">
+      <VStack spacing={4} align="stretch" bg="white" p={4} borderRadius="md">
         <FormControl isRequired>
-          <FormLabel>Username</FormLabel>
+          <FormLabel>Email</FormLabel>
           <Input
-            name="username"
-            value={formState.username}
+            name="email"
+            type="email"
+            value={formState.email}
             onChange={handleChange}
-            placeholder="Enter your username"
+            placeholder="Enter your email"
           />
         </FormControl>
 

@@ -1,5 +1,8 @@
 import { gql } from 'apollo-server-express';
+
 const typeDefs = gql`
+  scalar Upload
+
   type User {
     _id: ID!
     username: String!
@@ -22,10 +25,16 @@ const typeDefs = gql`
     getSingleUser(id: ID, username: String): User
     getMe: User
   }
+  type TranscriptionResponse {
+    transcript: String
+    supportiveResponse: String
+  }
 
   type Mutation {
     createUser(input: UserInput!): AuthPayload
     login(username: String, email: String, password: String!): AuthPayload
+    transcribeAudio(audio: Upload!): TranscriptionResponse
   }
 `;
+
 export default typeDefs;

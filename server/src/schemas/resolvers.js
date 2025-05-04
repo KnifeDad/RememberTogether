@@ -1,7 +1,23 @@
+/* eslint-disable no-console */
+import fs from 'fs';
+import path from 'path';
+import { GraphQLUpload } from 'graphql-upload';
+import { SpeechClient } from '@google-cloud/speech';
 import User from '../models/User.js';
 import { signToken } from '../utils/auth.js';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const speechClient = new SpeechClient({
+  keyFilename: path.join(process.cwd(), 'google-services.json'),
+});
 
 const resolvers = {
+  Upload: GraphQLUpload,
+
   Query: {
     getSingleUser: async (_parent, { id, username }) => {
       const foundUser = await User.findOne({
@@ -26,30 +42,91 @@ const resolvers = {
   Mutation: {
     createUser: async (_parent, { input }) => {
       const user = await User.create(input);
-
-      if (!user) {
-        throw new Error('Something is wrong!');
-      }
-
+      if (!user) throw new Error('Something is wrong!');
       const token = signToken(user.username, user.email, user._id);
       return { token, user };
     },
 
     login: async (_parent, { username, email, password }) => {
       const user = await User.findOne({ $or: [{ username }, { email }] });
-
-      if (!user) {
-        throw new Error("Can't find this user");
-      }
+      if (!user) throw new Error("Can't find this user");
 
       const correctPw = await user.isCorrectPassword(password);
-
-      if (!correctPw) {
-        throw new Error('Wrong password!');
-      }
+      if (!correctPw) throw new Error('Wrong password!');
 
       const token = signToken(user.username, user.email, user._id);
       return { token, user };
+    },
+
+    transcribeAudio: async (_parent, { audio }) => {
+      const { createReadStream, filename } = await audio;
+      const stream = createReadStream();
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+      const filePath = path.join(uploadsDir, filename);
+
+      await new Promise((resolve, reject) => {
+        const out = fs.createWriteStream(filePath);
+        stream.pipe(out);
+        out.on('finish', resolve);
+        out.on('error', reject);
+      });
+
+      const stats = fs.statSync(filePath);
+      console.log(`Saved file size: ${stats.size} bytes`);
+      if (stats.size < 1000) {
+        fs.unlinkSync(filePath);
+        throw new Error('Uploaded file seems too small or empty.');
+      }
+
+      const audioBytes = fs.readFileSync(filePath).toString('base64');
+      const request = {
+        audio: { content: audioBytes },
+        config: {
+          encoding: 'WEBM_OPUS',
+          sampleRateHertz: 48000,
+          languageCode: 'en-US',
+        },
+      };
+
+      const [response] = await speechClient.recognize(request);
+      fs.unlinkSync(filePath);
+
+      const transcript = response.results.map(r => r.alternatives[0].transcript).join('\n');
+      console.log('Transcript:', transcript);
+
+      if (!transcript)
+        return {
+          transcript: '',
+          supportiveResponse: 'Could not transcribe audio.',
+        };
+
+      // OpenAI Chat Completion for Tone Analysis
+      try {
+        const toneAnalysis = await openai.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content:
+                `You are a supportive AI companion that helps users express themselves. Based on the user's spoken message, you may provide emotional support, or help them write a short poem, story, or thoughtful reflection if appropriate. Always respond directly to the user as a friendly, empathetic voice.
+                `.trim(),
+            },
+            {
+              role: 'user',
+              content: `Here is my message: "${transcript}". Please respond helpfully and creatively.`,
+            },
+          ],
+        });
+
+        const supportiveResponse = toneAnalysis.choices[0].message.content;
+        console.log('Tone Analysis & Support:', supportiveResponse);
+
+        return { transcript, supportiveResponse };
+      } catch (error) {
+        console.error('Error in OpenAI tone analysis:', error);
+        return { transcript, supportiveResponse: 'Could not analyze tone.' };
+      }
     },
   },
 };
