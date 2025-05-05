@@ -17,10 +17,15 @@
   },
   "dependencies": {
     "@apollo/server": "^4.12.0",
+    "@chakra-ui/react": "^3.17.0",
+    "@google-cloud/speech": "^7.0.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "express4": "^0.0.1",
     "graphql": "^16.11.0",
-    "graphql-tag": "^2.12.6"
+    "graphql-tag": "^2.12.6",
+    "graphql-upload": "^17.0.0",
+    "openai": "^4.97.0",
+    "react-icons": "^5.5.0"
   }
 }

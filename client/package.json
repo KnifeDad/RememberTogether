@@ -3,15 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@apollo/client": "^3.8.9",
+    "@apollo/client": "^3.13.8",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "apollo-upload-client": "^17.0.0",
     "framer-motion": "^10.16.4",
-    "graphql": "^16.8.1",
+    "graphql": "^16.11.0",
     "jwt-decode": "^3.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^4.12.0",
     "react-router-dom": "^6.15.0",
     "react-scripts": "5.0.1"
   },
@@ -53,4 +55,4 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^3.0.2"
   }
-} 
+}

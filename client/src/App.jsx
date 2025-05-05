@@ -1,16 +1,21 @@
 import React from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { createUploadLink } from 'apollo-upload-client';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
-
-// Create an Apollo Client instance
-const httpLink = createHttpLink({
+// ✅ Replace createHttpLink with createUploadLink
+const uploadLink = createUploadLink({
   uri: 'http://localhost:3001/graphql',
+  headers: {
+    'Apollo-Require-Preflight': 'true',
+  },
+  credentials: 'include', // optional, depends on CORS/auth
 });
 
+// Auth middleware to attach token
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
   return {
@@ -21,8 +26,9 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+// Apollo Client setup
 const client = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: authLink.concat(uploadLink), // ✅ combine auth and upload links
   cache: new InMemoryCache(),
 });
 
