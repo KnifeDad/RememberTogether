@@ -1,8 +1,7 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/remember-together', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
-module.exports = mongoose.connection; 
+export default mongoose.connection;
