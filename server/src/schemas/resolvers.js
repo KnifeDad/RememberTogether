@@ -57,6 +57,30 @@ const resolvers = {
       const token = signToken(user.username, user.email, user._id);
       return { token, user };
     },
+    generateTextResponse: async (_parent, { text }) => {
+      try {
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a helpful, creative AI assistant. Based on the user's message, respond in an emotionally supportive, poetic, or thoughtful way. Offer encouragement or help them express themselves.`,
+            },
+            {
+              role: 'user',
+              content: text,
+            },
+          ],
+        });
+
+        const reply = completion.choices[0].message.content;
+        console.log('Generated text response:', reply);
+        return reply;
+      } catch (error) {
+        console.error('OpenAI error (text response):', error);
+        return 'Sorry, I had trouble generating a response.';
+      }
+    },
 
     transcribeAudio: async (_parent, { audio }) => {
       const { createReadStream, filename } = await audio;
