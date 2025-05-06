@@ -13,7 +13,8 @@ import {
 import { FaMicrophone, FaPaperPlane } from 'react-icons/fa';
 import { useMutation } from '@apollo/client';
 import { UPLOAD_AUDIO } from '../utils/mutation'; // Import the mutation
-
+import ReactMarkdown from 'react-markdown';
+import { GET_TEXT_RESPONSE } from '../utils/mutation'; // Import the mutation for text response
 export default function ChatUI() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -22,6 +23,7 @@ export default function ChatUI() {
   const audioChunksRef = useRef([]);
 
   const [uploadAudio] = useMutation(UPLOAD_AUDIO); // Use the mutation here
+  const [getTextResponse] = useMutation(GET_TEXT_RESPONSE);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -30,14 +32,14 @@ export default function ChatUI() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
 
-    // Simulated bot response (can be replaced with real logic)
-    const simulatedResponse = {
-      text: 'I’m here for you. Do you want to talk more about it?',
-      tone: Math.random(),
-      escalation: Math.random() > 0.7,
-      sender: 'bot',
-    };
-    setMessages(prev => [...prev, simulatedResponse]);
+    try {
+      const { data } = await getTextResponse({ variables: { text: input } });
+      const botMessage = { text: data.generateTextResponse, sender: 'bot' };
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Text response error:', error);
+      setMessages(prev => [...prev, { text: 'Failed to get response.', sender: 'bot' }]);
+    }
   };
 
   const handleRecord = async () => {
@@ -136,7 +138,11 @@ export default function ChatUI() {
               maxW="70%"
               shadow="sm"
             >
-              <Text fontSize="sm">{msg.text}</Text>
+              {msg.sender === 'bot' ? (
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              ) : (
+                <Text fontSize="sm">{msg.text}</Text>
+              )}
               {msg.tone !== undefined && (
                 <Text fontSize="xs" color="gray.500" mt={1}>
                   Tone score: {msg.tone.toFixed(2)}

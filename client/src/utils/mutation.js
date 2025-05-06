@@ -34,3 +34,9 @@ export const UPLOAD_AUDIO = gql`
     }
   }
 `;
+
+export const GET_TEXT_RESPONSE = gql`
+  mutation GenerateTextResponse($text: String!) {
+    generateTextResponse(text: $text)
+  }
+`;

@@ -34,6 +34,7 @@ const typeDefs = gql`
     createUser(input: UserInput!): AuthPayload
     login(username: String, email: String, password: String!): AuthPayload
     transcribeAudio(audio: Upload!): TranscriptionResponse
+    generateTextResponse(text: String!): String
   }
 `;
 
