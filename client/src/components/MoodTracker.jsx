@@ -1,39 +1,31 @@
 import React, { useState } from 'react';
+import { Box, Select, Button } from '@chakra-ui/react';
 
 const MoodTracker = () => {
   const [mood, setMood] = useState('');
-  const [moodEntries, setMoodEntries] = useState([]);
 
-  const handleMoodChange = e => {
-    setMood(e.target.value);
-  };
-
+  const handleMoodChange = e => setMood(e.target.value);
   const handleSubmit = e => {
     e.preventDefault();
-    if (mood) {
-      setMoodEntries([...moodEntries, mood]);
-      setMood('');
-    }
+    console.log('Mood:', mood);
+    setMood('');
   };
 
   return (
-    <div>
-      <h2>Mood Tracker</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={mood}
-          onChange={handleMoodChange}
-          placeholder="How are you feeling?"
-        />
-        <button type="submit">Add Mood</button>
-      </form>
-      <ul>
-        {moodEntries.map((entry, index) => (
-          <li key={index}>{entry}</li>
-        ))}
-      </ul>
-    </div>
+    <Box as="form" onSubmit={handleSubmit} display="flex" alignItems="center" gap={2}>
+      <Select value={mood} onChange={handleMoodChange} placeholder="Mood" size="sm" width="120px">
+        <option value="happy">Happy</option>
+        <option value="sad">Sad</option>
+        <option value="neutral">Neutral</option>
+        <option value="angry">Angry</option>
+        <option value="anxious">Anxious</option>
+        <option value="excited">Excited</option>
+        <option value="calm">Calm</option>
+      </Select>
+      <Button type="submit" colorScheme="blue" size="sm">
+        Add
+      </Button>
+    </Box>
   );
 };
 
