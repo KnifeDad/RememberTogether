@@ -4,6 +4,7 @@ import path from 'path';
 import { GraphQLUpload } from 'graphql-upload';
 import { SpeechClient } from '@google-cloud/speech';
 import User from '../models/User.js';
+import Mood from '../models/Mood.js'; // Import Mood model
 import { signToken } from '../utils/auth.js';
 import OpenAI from 'openai';
 
@@ -37,6 +38,16 @@ const resolvers = {
       }
       throw new Error('You need to be logged in!');
     },
+
+    // Add getMoods query
+    getMoods: async () => {
+      try {
+        return await Mood.find().sort({ createdAt: -1 }); // Sort by most recent
+      } catch (error) {
+        console.error('Error fetching moods:', error);
+        throw new Error('Failed to fetch moods');
+      }
+    },
   },
 
   Mutation: {
@@ -57,6 +68,7 @@ const resolvers = {
       const token = signToken(user.username, user.email, user._id);
       return { token, user };
     },
+
     generateTextResponse: async (_parent, { text }) => {
       try {
         const completion = await openai.chat.completions.create({
@@ -150,6 +162,18 @@ const resolvers = {
       } catch (error) {
         console.error('Error in OpenAI tone analysis:', error);
         return { transcript, supportiveResponse: 'Could not analyze tone.' };
+      }
+    },
+
+    // Add addMood mutation
+    addMood: async (_parent, { mood }) => {
+      try {
+        const newMood = new Mood({ mood, createdAt: new Date().toISOString() });
+        await newMood.save();
+        return newMood;
+      } catch (error) {
+        console.error('Error adding mood:', error);
+        throw new Error('Failed to add mood');
       }
     },
   },

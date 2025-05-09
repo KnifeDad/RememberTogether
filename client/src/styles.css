@@ -1,0 +1,42 @@
+/* filepath: c:\Users\sagos\OneDrive\Desktop\Remember Together\RememberTogether\client\src\styles.css */
+
+body {
+  background-color: #ffb6c1 !important; /* Light pink */
+  color: #4b0082 !important; /* Indigo for text */
+  font-family: Arial, sans-serif;
+}
+
+a {
+  color: #0000ff; /* Blue for links */
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ff1053; /* Red */
+}
+
+header {
+  background-color: #add8e6 !important; /* Light blue */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+  background-color: #add8e6 !important; /* Light blue */
+  color: #4b0082; /* Indigo for text */
+  text-align: center;
+  padding: 1rem;
+}
+
+button {
+  background-color: #ff1053; /* Red */
+  color: #ffffff; /* White */
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #6c6ea0; /* Purple */
+}
