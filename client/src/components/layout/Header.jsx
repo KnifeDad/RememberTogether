@@ -11,13 +11,14 @@ import {
   DrawerCloseButton,
   DrawerHeader,
   DrawerBody,
-} from '@chakra-ui/react'; // <-- Import Drawer components
+} from '@chakra-ui/react'; // Import Drawer components
 import { BsStars } from 'react-icons/bs';
 import { FaPaintBrush } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
 import ChatUI from '../ChatUI';
+import MoodTracker from '../MoodTracker'; // Import MoodTracker component
 
 function Header() {
   const { isAuthenticated, logout, user } = useAuth();
@@ -34,6 +35,7 @@ function Header() {
         </Link>
 
         <Flex align="center" gap={4}>
+
           {/* Healing Canvas Button */}
           <Button
             as={RouterLink}
@@ -52,6 +54,12 @@ function Header() {
           </Button>
 
           {/* Chat Button */}
+
+          {/* Mood Tracker */}
+          <MoodTracker />
+
+          {/* Button to open Chat Drawer */}
+
           <Button
             leftIcon={<BsStars />}
             colorScheme="purple"

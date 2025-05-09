@@ -6,8 +6,13 @@ import { setContext } from '@apollo/client/link/context';
 import { createUploadLink } from 'apollo-upload-client';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
+
 import HealingCanvas from './components/HealingCanvas';
-// ✅ Replace createHttpLink with createUploadLink
+
+import './styles.css';
+
+// Replace createHttpLink with createUploadLink
+
 const uploadLink = createUploadLink({
   uri: 'http://localhost:3001/graphql',
   headers: {
@@ -29,7 +34,7 @@ const authLink = setContext((_, { headers }) => {
 
 // Apollo Client setup
 const client = new ApolloClient({
-  link: authLink.concat(uploadLink), // ✅ combine auth and upload links
+  link: authLink.concat(uploadLink), // Combine auth and upload links
   cache: new InMemoryCache(),
 });
 
@@ -41,9 +46,13 @@ function App() {
           <Router>
             <Layout>
               <Routes>
+
                 <Route path="/" element={<div>Welcome to RememberTogether</div>} />
                 <Route path="/healing-canvas" element={<HealingCanvas />} />
                 {/* Add more routes here */}
+
+  
+                
               </Routes>
             </Layout>
           </Router>
