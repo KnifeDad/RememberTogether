@@ -21,20 +21,30 @@ const typeDefs = gql`
     user: User!
   }
 
-  type Query {
-    getSingleUser(id: ID, username: String): User
-    getMe: User
+  type Mood {
+    id: ID!
+    mood: String!
+    date: String!
+    notes: String
   }
+
   type TranscriptionResponse {
     transcript: String
     supportiveResponse: String
   }
 
+  type Query {
+    getSingleUser(id: ID, username: String): User
+    getMe: User
+    getMoods: [Mood]
+  }
+
   type Mutation {
     createUser(input: UserInput!): AuthPayload
     login(username: String, email: String, password: String!): AuthPayload
-    transcribeAudio(audio: Upload!): TranscriptionResponse
+    addMood(mood: String!, notes: String): Mood
     generateTextResponse(text: String!): String
+    transcribeAudio(audio: Upload!): TranscriptionResponse
   }
 `;
 
