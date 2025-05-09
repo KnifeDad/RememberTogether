@@ -13,6 +13,7 @@ import {
   DrawerBody,
 } from '@chakra-ui/react'; // <-- Import Drawer components
 import { BsStars } from 'react-icons/bs';
+import { FaPaintBrush } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
@@ -33,15 +34,32 @@ function Header() {
         </Link>
 
         <Flex align="center" gap={4}>
-          {/* Button to open Chat Drawer */}
+          {/* Healing Canvas Button */}
+          <Button
+            as={RouterLink}
+            to="/healing-canvas"
+            leftIcon={<FaPaintBrush />}
+            colorScheme="teal"
+            variant="solid"
+            size="md"
+            px={3}
+            py={2}
+            fontSize="md"
+            boxShadow="0 0 10px #319795, 0 0 20px #319795"
+            _hover={{ boxShadow: '0 0 20px #4FD1C5, 0 0 30px #4FD1C5' }}
+          >
+            Healing Canvas
+          </Button>
+
+          {/* Chat Button */}
           <Button
             leftIcon={<BsStars />}
             colorScheme="purple"
             variant="solid"
-            size="md" // medium built-in size
-            px={3} // tighter horizontal padding
-            py={2} // tighter vertical padding
-            fontSize="md" // medium font
+            size="md"
+            px={3}
+            py={2}
+            fontSize="md"
             boxShadow="0 0 10px #9F7AEA, 0 0 20px #9F7AEA"
             _hover={{ boxShadow: '0 0 20px #B794F4, 0 0 30px #B794F4' }}
             onClick={onChatOpen}

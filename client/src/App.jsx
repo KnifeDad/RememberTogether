@@ -6,6 +6,7 @@ import { setContext } from '@apollo/client/link/context';
 import { createUploadLink } from 'apollo-upload-client';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
+import HealingCanvas from './components/HealingCanvas';
 // ✅ Replace createHttpLink with createUploadLink
 const uploadLink = createUploadLink({
   uri: 'http://localhost:3001/graphql',
@@ -41,6 +42,7 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<div>Welcome to RememberTogether</div>} />
+                <Route path="/healing-canvas" element={<HealingCanvas />} />
                 {/* Add more routes here */}
               </Routes>
             </Layout>
