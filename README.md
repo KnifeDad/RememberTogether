@@ -24,12 +24,14 @@ Coming Soon!
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/RememberTogether.git
    cd RememberTogether
    ```
 
 2. Install dependencies for both client and server:
+
    ```bash
    # Install server dependencies
    cd server
@@ -41,6 +43,7 @@ Coming Soon!
    ```
 
 3. Set up environment variables:
+
    ```bash
    # Create .env file in server directory
    cd ../server
@@ -49,12 +52,14 @@ Coming Soon!
    ```
 
 4. Start the development servers:
+
    ```bash
    # From the root directory, start both client and server concurrently
    npm run dev
    ```
 
    The application should now be running:
+
    - Frontend: http://localhost:3000
    - Backend: http://localhost:3001
    - GraphQL Playground: http://localhost:3001/graphql
@@ -79,4 +84,4 @@ The application is deployed on Render.
 
 ## Contact
 
-For any questions or support, please contact the development team. 
+For any questions or support, please contact the development team.

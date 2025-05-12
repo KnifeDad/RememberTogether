@@ -6,11 +6,11 @@ import Footer from './Footer';
 function Layout({ children }) {
   return (
     <Box minH="100vh" display="flex" flexDirection="column">
-      <Header />
+      <Header /> {/* Header at the top */}
       <Container maxW="container.xl" flex="1" py={8}>
-        {children}
+        {children} {/* Render the main content */}
       </Container>
-      <Footer />
+      <Footer /> {/* Footer at the bottom */}
     </Box>
   );
 }
