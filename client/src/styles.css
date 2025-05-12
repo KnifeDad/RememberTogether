@@ -40,3 +40,8 @@ button {
 button:hover {
   background-color: #6c6ea0; /* Purple */
 }
+
+
+/* Add these to support the carousel styling */
+@import "~slick-carousel/slick/slick.css";
+@import "~slick-carousel/slick/slick-theme.css";

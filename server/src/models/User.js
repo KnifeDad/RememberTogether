@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 
 const userSchema = new Schema(
@@ -18,6 +18,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    memories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Memory' }],
   },
   // set this to use virtual below
   {
