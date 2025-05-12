@@ -33,7 +33,6 @@ import {
   FaSave,
   FaFolderOpen,
   FaLungs,
-  FaPaintBrush,
 } from 'react-icons/fa';
 import { Canvas, IText, Circle, Rect, PencilBrush, Line, PatternBrush, Path, Group } from 'fabric';
 
@@ -90,223 +89,18 @@ const emotionColors = [
   },
 ];
 
-// Add custom brush classes
-class DottedBrush {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.width = 5;
-    this.color = '#000000';
-    this.dotSpacing = 10;
-    this._points = [];
-  }
-
-  onMouseDown(pointer) {
-    this._points = [pointer];
-  }
-
-  onMouseMove(pointer) {
-    this._points.push(pointer);
-    this._render();
-  }
-
-  onMouseUp() {
-    this._points = [];
-  }
-
-  _render() {
-    const ctx = this.canvas.getContext();
-    if (!ctx || !this._points || this._points.length < 2) return;
-
-    ctx.fillStyle = this.color;
-    const radius = this.width / 2;
-
-    for (let i = 0; i < this._points.length; i += this.dotSpacing) {
-      const point = this._points[i];
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-}
-
-class WavyBrush {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.width = 5;
-    this.color = '#000000';
-    this.waveHeight = 10;
-    this._points = [];
-  }
-
-  onMouseDown(pointer) {
-    this._points = [pointer];
-  }
-
-  onMouseMove(pointer) {
-    this._points.push(pointer);
-    this._render();
-  }
-
-  onMouseUp() {
-    this._points = [];
-  }
-
-  _render() {
-    const ctx = this.canvas.getContext();
-    if (!ctx || !this._points || this._points.length < 2) return;
-
-    ctx.beginPath();
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = this.width;
-
-    let prev = this._points[0];
-    ctx.moveTo(prev.x, prev.y);
-
-    for (let i = 1; i < this._points.length; i++) {
-      const curr = this._points[i];
-      const midX = (prev.x + curr.x) / 2;
-      const midY = (prev.y + curr.y) / 2 + (i % 2 === 0 ? this.waveHeight : -this.waveHeight);
-      ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
-      prev = curr;
-    }
-    ctx.stroke();
-  }
-}
-
-class DashedBrush {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.width = 5;
-    this.color = '#000000';
-    this.dashLength = 10;
-    this.gapLength = 5;
-    this._points = [];
-  }
-
-  onMouseDown(pointer) {
-    this._points = [pointer];
-  }
-
-  onMouseMove(pointer) {
-    this._points.push(pointer);
-    this._render();
-  }
-
-  onMouseUp() {
-    this._points = [];
-  }
-
-  _render() {
-    const ctx = this.canvas.getContext();
-    if (!ctx || !this._points || this._points.length < 2) return;
-
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = this.width;
-
-    let distance = 0;
-    let drawing = true;
-    let start = this._points[0];
-
-    for (let i = 1; i < this._points.length; i++) {
-      const end = this._points[i];
-      const dx = end.x - start.x;
-      const dy = end.y - start.y;
-      const segmentLength = Math.sqrt(dx * dx + dy * dy);
-      if (drawing) {
-        ctx.beginPath();
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
-        ctx.stroke();
-      }
-      distance += segmentLength;
-      if (drawing && distance >= this.dashLength) {
-        drawing = false;
-        distance = 0;
-      } else if (!drawing && distance >= this.gapLength) {
-        drawing = true;
-        distance = 0;
-      }
-      start = end;
-    }
-  }
-}
-
-// Add brush textures
-const brushTextures = [
-  {
-    name: 'Smooth',
-    brush: class SmoothBrush {
-      constructor(canvas) {
-        this.canvas = canvas;
-        this.width = 5;
-        this.color = '#000000';
-        this._points = [];
-      }
-
-      onMouseDown(pointer) {
-        this._points = [pointer];
-      }
-
-      onMouseMove(pointer) {
-        this._points.push(pointer);
-        this._render();
-      }
-
-      onMouseUp() {
-        this._points = [];
-      }
-
-      _render() {
-        const ctx = this.canvas.getContext();
-        if (!ctx || !this._points || this._points.length < 2) return;
-
-        ctx.beginPath();
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = this.width;
-
-        let prev = this._points[0];
-        ctx.moveTo(prev.x, prev.y);
-
-        for (let i = 1; i < this._points.length; i++) {
-          const curr = this._points[i];
-          ctx.lineTo(curr.x, curr.y);
-          prev = curr;
-        }
-        ctx.stroke();
-      }
-    },
-    icon: 'FaPencilAlt',
-  },
-  {
-    name: 'Dotted',
-    brush: DottedBrush,
-    icon: 'FaPencilAlt',
-  },
-  {
-    name: 'Wavy',
-    brush: WavyBrush,
-    icon: 'FaPencilAlt',
-  },
-  {
-    name: 'Dashed',
-    brush: DashedBrush,
-    icon: 'FaPencilAlt',
-  },
-];
-
 const HealingCanvas = () => {
   const canvasRef = useRef(null);
   const [canvas, setCanvas] = useState(null);
   const [brushSize, setBrushSize] = useState(5);
   const [selectedColor, setSelectedColor] = useState('#000000');
-  const [currentTool, setCurrentTool] = useState('paintbrush');
+  const [currentTool, setCurrentTool] = useState('pencil');
   const [isDrawing, setIsDrawing] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [gridSize, setGridSize] = useState(20);
   const [showBreathing, setShowBreathing] = useState(false);
   const removedObjectsRef = useRef([]);
   const toast = useToast();
-  const [selectedTexture, setSelectedTexture] = useState('Smooth');
 
   // Initialize canvas
   useEffect(() => {
@@ -316,20 +110,13 @@ const HealingCanvas = () => {
       width: Math.max(window.innerWidth - 40, 800),
       height: Math.max(window.innerHeight - 100, 600),
       backgroundColor: '#ffffff',
-      isDrawingMode: false,
       preserveObjectStacking: true,
     });
 
-    // Add path:created event to ensure paths are preserved
-    canvas.on('path:created', function (e) {
-      const path = e.path;
-      path.set({
-        selectable: true,
-        evented: true,
-        stroke: selectedColor,
-        strokeWidth: brushSize,
-      });
-    });
+    // Set up event listeners
+    canvas.on('mouse:down', handleMouseDown);
+    canvas.on('mouse:move', handleMouseMove);
+    canvas.on('mouse:up', handleMouseUp);
 
     setCanvas(canvas);
 
@@ -350,50 +137,30 @@ const HealingCanvas = () => {
     };
   }, []);
 
-  // Update brush when size or color changes
+  // Update canvas when tool changes
   useEffect(() => {
     if (!canvas) return;
 
-    // Remove all existing event listeners
+    // Remove all event listeners
     canvas.off('mouse:down');
     canvas.off('mouse:move');
     canvas.off('mouse:up');
     canvas.off('path:created');
 
-    if (currentTool === 'pencil' || currentTool === 'paintbrush') {
+    if (currentTool === 'pencil') {
       canvas.isDrawingMode = true;
       const brush = new PencilBrush(canvas);
       brush.width = brushSize;
       brush.color = selectedColor;
       canvas.freeDrawingBrush = brush;
-
-      // Add path:created event handler
-      canvas.on('path:created', (e) => {
-        const path = e.path;
-        path.set({
-          selectable: true,
-          evented: true,
-          stroke: selectedColor,
-          strokeWidth: brushSize,
-        });
-      });
+      canvas.requestRenderAll();
     } else if (currentTool === 'eraser') {
       canvas.isDrawingMode = true;
       const brush = new PencilBrush(canvas);
       brush.width = brushSize;
       brush.color = '#ffffff';
       canvas.freeDrawingBrush = brush;
-
-      // Add path:created event handler for eraser
-      canvas.on('path:created', (e) => {
-        const path = e.path;
-        path.set({
-          selectable: false,
-          evented: false,
-          stroke: '#ffffff',
-          strokeWidth: brushSize,
-        });
-      });
+      canvas.requestRenderAll();
     } else if (currentTool === 'text') {
       canvas.isDrawingMode = false;
       canvas.on('mouse:down', (options) => {
@@ -404,101 +171,20 @@ const HealingCanvas = () => {
           fontFamily: 'Arial',
           fontSize: 20,
           fill: selectedColor,
+          selectable: true,
         });
         canvas.add(text);
         canvas.setActiveObject(text);
         text.enterEditing();
       });
-    } else if (currentTool === 'line') {
-      canvas.isDrawingMode = false;
-      let startPoint;
-      let line;
-      canvas.on('mouse:down', (options) => {
-        startPoint = canvas.getPointer(options.e);
-        line = new Line([startPoint.x, startPoint.y, startPoint.x, startPoint.y], {
-          stroke: selectedColor,
-          strokeWidth: brushSize,
-        });
-        canvas.add(line);
-      });
-      canvas.on('mouse:move', (options) => {
-        if (!line) return;
-        const pointer = canvas.getPointer(options.e);
-        line.set({
-          x2: pointer.x,
-          y2: pointer.y,
-        });
-        canvas.requestRenderAll();
-      });
-      canvas.on('mouse:up', () => {
-        line = null;
-      });
-    } else if (currentTool === 'circle') {
-      canvas.isDrawingMode = false;
-      let startPoint;
-      let circle;
-      canvas.on('mouse:down', (options) => {
-        startPoint = canvas.getPointer(options.e);
-        circle = new Circle({
-          left: startPoint.x,
-          top: startPoint.y,
-          radius: 0,
-          stroke: selectedColor,
-          strokeWidth: brushSize,
-          fill: 'transparent',
-        });
-        canvas.add(circle);
-      });
-      canvas.on('mouse:move', (options) => {
-        if (!circle) return;
-        const pointer = canvas.getPointer(options.e);
-        const radius = Math.sqrt(
-          Math.pow(pointer.x - startPoint.x, 2) + Math.pow(pointer.y - startPoint.y, 2)
-        );
-        circle.set({
-          radius: radius,
-        });
-        canvas.requestRenderAll();
-      });
-      canvas.on('mouse:up', () => {
-        circle = null;
-      });
-    } else if (currentTool === 'rectangle') {
-      canvas.isDrawingMode = false;
-      let startPoint;
-      let rect;
-      canvas.on('mouse:down', (options) => {
-        startPoint = canvas.getPointer(options.e);
-        rect = new Rect({
-          left: startPoint.x,
-          top: startPoint.y,
-          width: 0,
-          height: 0,
-          stroke: selectedColor,
-          strokeWidth: brushSize,
-          fill: 'transparent',
-        });
-        canvas.add(rect);
-      });
-      canvas.on('mouse:move', (options) => {
-        if (!rect) return;
-        const pointer = canvas.getPointer(options.e);
-        rect.set({
-          width: pointer.x - startPoint.x,
-          height: pointer.y - startPoint.y,
-        });
-        canvas.requestRenderAll();
-      });
-      canvas.on('mouse:up', () => {
-        rect = null;
-      });
     } else {
       canvas.isDrawingMode = false;
-      canvas.freeDrawingBrush = null;
+      // Add back shape handlers
+      canvas.on('mouse:down', handleMouseDown);
+      canvas.on('mouse:move', handleMouseMove);
+      canvas.on('mouse:up', handleMouseUp);
     }
-
-    canvas.requestRenderAll();
-  }, [canvas, brushSize, selectedColor, currentTool]);
+  }, [canvas, currentTool, brushSize, selectedColor]);
 
   const saveDrawing = () => {
     if (!canvas) return;
@@ -605,19 +291,6 @@ const HealingCanvas = () => {
     }
   };
 
-  // Add texture selection handler
-  const handleTextureSelect = (texture) => {
-    setSelectedTexture(texture);
-    if (currentTool === 'pencil' && canvas) {
-      canvas.isDrawingMode = true;
-      const brush = new PencilBrush(canvas);
-      brush.width = brushSize;
-      brush.color = selectedColor;
-      canvas.freeDrawingBrush = brush;
-      canvas.requestRenderAll();
-    }
-  };
-
   // Add undo/redo functionality
   const handleUndo = () => {
     if (!canvas) return;
@@ -689,7 +362,7 @@ const HealingCanvas = () => {
 
   // Add grid functionality
   useEffect(() => {
-    if (!canvas || !showGrid) return;
+    if (!canvas) return;
 
     const drawGrid = () => {
       const ctx = canvas.getContext();
@@ -714,6 +387,10 @@ const HealingCanvas = () => {
       }
     };
 
+    // Remove any existing grid event listener
+    canvas.off('after:render', drawGrid);
+
+    // Add grid event listener only if grid is enabled
     if (showGrid) {
       canvas.on('after:render', drawGrid);
       canvas.requestRenderAll();
@@ -723,6 +400,104 @@ const HealingCanvas = () => {
       canvas.off('after:render', drawGrid);
     };
   }, [canvas, showGrid, gridSize]);
+
+  // Add grid toggle handler
+  const handleGridToggle = () => {
+    setShowGrid(!showGrid);
+    if (canvas) {
+      canvas.requestRenderAll();
+    }
+  };
+
+  // Add shape creation handlers
+  const handleMouseDown = (e) => {
+    if (!canvas) return;
+
+    const pointer = canvas.getPointer(e.e);
+    const x = pointer.x;
+    const y = pointer.y;
+
+    if (currentTool === 'circle') {
+      const circle = new Circle({
+        left: x,
+        top: y,
+        radius: 0,
+        fill: 'transparent',
+        stroke: selectedColor,
+        strokeWidth: brushSize,
+        selectable: true,
+        originX: 'center',
+        originY: 'center',
+      });
+      canvas.add(circle);
+      canvas.setActiveObject(circle);
+    } else if (currentTool === 'rectangle') {
+      const rect = new Rect({
+        left: x,
+        top: y,
+        width: 0,
+        height: 0,
+        fill: 'transparent',
+        stroke: selectedColor,
+        strokeWidth: brushSize,
+        selectable: true,
+      });
+      canvas.add(rect);
+      canvas.setActiveObject(rect);
+    } else if (currentTool === 'line') {
+      const line = new Line([x, y, x, y], {
+        stroke: selectedColor,
+        strokeWidth: brushSize,
+        selectable: true,
+      });
+      canvas.add(line);
+      canvas.setActiveObject(line);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!canvas) return;
+
+    const pointer = canvas.getPointer(e.e);
+    const x = pointer.x;
+    const y = pointer.y;
+
+    const activeObject = canvas.getActiveObject();
+    if (!activeObject) return;
+
+    if (currentTool === 'circle') {
+      const radius = Math.sqrt(
+        Math.pow(x - activeObject.left, 2) + Math.pow(y - activeObject.top, 2)
+      );
+      activeObject.set('radius', radius);
+    } else if (currentTool === 'rectangle') {
+      const width = x - activeObject.left;
+      const height = y - activeObject.top;
+      activeObject.set({
+        width: Math.abs(width),
+        height: Math.abs(height),
+        left: width < 0 ? x : activeObject.left,
+        top: height < 0 ? y : activeObject.top,
+      });
+    } else if (currentTool === 'line') {
+      activeObject.set({
+        x2: x,
+        y2: y,
+      });
+    }
+    canvas.requestRenderAll();
+  };
+
+  const handleMouseUp = () => {
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject) {
+      // Ensure the object is properly rendered
+      canvas.requestRenderAll();
+      // Deselect the object after creation
+      canvas.discardActiveObject();
+    }
+  };
 
   return (
     <Box p={4}>
@@ -736,12 +511,6 @@ const HealingCanvas = () => {
         gap={2}
       >
         <HStack spacing={2}>
-          <IconButton
-            icon={<FaPaintBrush />}
-            onClick={() => handleToolSelect('paintbrush')}
-            colorScheme={currentTool === 'paintbrush' ? 'blue' : 'gray'}
-            aria-label="Paintbrush"
-          />
           <IconButton
             icon={<FaPencilAlt />}
             onClick={() => handleToolSelect('pencil')}
@@ -775,8 +544,9 @@ const HealingCanvas = () => {
           />
           <IconButton
             icon={<FaTh />}
-            onClick={() => setShowGrid(!showGrid)}
+            onClick={handleGridToggle}
             colorScheme={showGrid ? 'blue' : 'gray'}
+            aria-label="Toggle grid"
           />
           <IconButton
             icon={<FaLungs />}
@@ -788,37 +558,6 @@ const HealingCanvas = () => {
         </HStack>
 
         <HStack spacing={4} ml={4}>
-          <Popover placement="bottom">
-            <PopoverTrigger>
-              <Button
-                leftIcon={<FaPencilAlt />}
-                colorScheme={currentTool === 'pencil' ? 'blue' : 'gray'}
-                variant="outline"
-              >
-                {selectedTexture}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent width="200px">
-              <PopoverBody>
-                <Text mb={2} fontWeight="bold">
-                  Brush Texture
-                </Text>
-                <SimpleGrid columns={2} spacing={2}>
-                  {brushTextures.map((texture) => (
-                    <Button
-                      key={texture.name}
-                      size="sm"
-                      onClick={() => handleTextureSelect(texture.name)}
-                      colorScheme={selectedTexture === texture.name ? 'blue' : 'gray'}
-                      variant="outline"
-                    >
-                      {texture.name}
-                    </Button>
-                  ))}
-                </SimpleGrid>
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
           <Box w="200px">
             <Text mb={2}>Brush Size: {brushSize}</Text>
             <Slider value={brushSize} onChange={setBrushSize} min={1} max={50} step={1}>
@@ -907,8 +646,12 @@ const HealingCanvas = () => {
         borderColor={useColorModeValue('gray.200', 'gray.600')}
         borderRadius="md"
         overflow="hidden"
+        width="100%"
+        height="calc(100vh - 200px)"
+        minHeight="600px"
+        bg="white"
       >
-        <canvas ref={canvasRef} />
+        <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />
         {showBreathing && (
           <Box
             position="absolute"

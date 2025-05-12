@@ -7,6 +7,11 @@ import { createUploadLink } from 'apollo-upload-client';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
 import HealingCanvas from './components/HealingCanvas';
+import LandingPage from './pages/LandingPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Contact from './pages/Contact';
+import Features from './pages/Features';
 import './styles.css';
 
 // Replace createHttpLink with createUploadLink
@@ -43,9 +48,12 @@ function App() {
           <Router>
             <Layout>
               <Routes>
-                <Route path="/" element={<div>Welcome to RememberTogether</div>} />
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/healing-canvas" element={<HealingCanvas />} />
-                {/* Add more routes here */}
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/features" element={<Features />} />
               </Routes>
             </Layout>
           </Router>

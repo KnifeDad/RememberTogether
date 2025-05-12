@@ -11,6 +11,8 @@ import {
   DrawerCloseButton,
   DrawerHeader,
   DrawerBody,
+  useColorModeValue,
+  Heading,
 } from '@chakra-ui/react'; // Import Drawer components
 import { BsStars } from 'react-icons/bs';
 import { FaPaintBrush } from 'react-icons/fa';
@@ -25,12 +27,32 @@ function Header() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isChatOpen, onOpen: onChatOpen, onClose: onChatClose } = useDisclosure();
 
+  const bgGradient = useColorModeValue(
+    'linear(to-r, purple.50, pink.50)',
+    'linear(to-r, purple.900, pink.900)'
+  );
+
   console.log('User:', user); // Log user data for debugging
 
   return (
-    <Box as="header" py={4} px={8} bg="white" shadow="sm">
+    <Box
+      as="header"
+      py={4}
+      px={8}
+      bgGradient={bgGradient}
+      borderBottom="1px solid"
+      borderColor={useColorModeValue('purple.100', 'purple.700')}
+    >
       <Flex justify="space-between" align="center">
-        <Link as={RouterLink} to="/" fontSize="xl" fontWeight="bold">
+        <Link
+          as={RouterLink}
+          to="/"
+          fontSize="xl"
+          fontWeight="bold"
+          bgGradient="linear(to-r, purple.600, pink.600)"
+          bgClip="text"
+          _hover={{ textDecoration: 'none' }}
+        >
           RememberTogether
         </Link>
 
@@ -43,14 +65,13 @@ function Header() {
             as={RouterLink}
             to="/healing-canvas"
             leftIcon={<FaPaintBrush />}
-            colorScheme="teal"
+            colorScheme="purple"
             variant="solid"
             size="md"
-            px={3}
-            py={2}
-            fontSize="md"
-            boxShadow="0 0 10px #319795, 0 0 20px #319795"
-            _hover={{ boxShadow: '0 0 20px #4FD1C5, 0 0 30px #4FD1C5' }}
+            bgGradient="linear(to-r, purple.500, pink.500)"
+            _hover={{
+              bgGradient: 'linear(to-r, purple.600, pink.600)',
+            }}
           >
             Healing Canvas
           </Button>
@@ -59,13 +80,13 @@ function Header() {
           <Button
             leftIcon={<BsStars />}
             colorScheme="purple"
-            variant="solid"
+            variant="outline"
             size="md"
-            px={3}
-            py={2}
-            fontSize="md"
-            boxShadow="0 0 10px #9F7AEA, 0 0 20px #9F7AEA"
-            _hover={{ boxShadow: '0 0 20px #B794F4, 0 0 30px #B794F4' }}
+            borderColor="purple.500"
+            _hover={{
+              bgGradient: 'linear(to-r, purple.500, pink.500)',
+              color: 'white',
+            }}
             onClick={onChatOpen}
           >
             Open Chat
@@ -73,13 +94,31 @@ function Header() {
 
           {isAuthenticated ? (
             <>
-              <Text fontWeight="medium">Hi, {user?.username}</Text>
-              <Button onClick={logout} colorScheme="red" variant="outline">
+              <Text fontWeight="medium" color="purple.700">
+                Hi, {user?.username}
+              </Text>
+              <Button
+                onClick={logout}
+                colorScheme="purple"
+                variant="outline"
+                borderColor="purple.500"
+                _hover={{
+                  bgGradient: 'linear(to-r, purple.500, pink.500)',
+                  color: 'white',
+                }}
+              >
                 Logout
               </Button>
             </>
           ) : (
-            <Button colorScheme="blue" onClick={onOpen}>
+            <Button
+              colorScheme="purple"
+              bgGradient="linear(to-r, purple.500, pink.500)"
+              _hover={{
+                bgGradient: 'linear(to-r, purple.600, pink.600)',
+              }}
+              onClick={onOpen}
+            >
               Get Started
             </Button>
           )}
@@ -92,10 +131,20 @@ function Header() {
       {/* Chat Drawer */}
       <Drawer isOpen={isChatOpen} placement="right" onClose={onChatClose} size="md">
         <DrawerOverlay />
-        <DrawerContent>
+        <DrawerContent bg="white">
           <DrawerCloseButton />
-          <DrawerHeader>Kristyn.AI</DrawerHeader>
-          <DrawerBody p={0}>
+          <Box p={4} bg="white" borderBottom="1px solid" borderColor="gray.200" position="relative">
+            <Heading
+              as="h2"
+              size="md"
+              textAlign="center"
+              bgGradient="linear(to-r, purple.600, pink.600)"
+              bgClip="text"
+            >
+              Kristyn.AI
+            </Heading>
+          </Box>
+          <DrawerBody p={0} bg="#FEB2B2">
             {/* ChatUI Component for chat functionality */}
             <ChatUI />
           </DrawerBody>

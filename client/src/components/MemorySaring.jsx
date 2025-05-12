@@ -14,11 +14,11 @@ const MemorySharing = () => {
     setMemories(data);
   };
 
-  const handleInputChange = e => {
+  const handleInputChange = (e) => {
     setMemoryInput(e.target.value);
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!memoryInput) return;
 
