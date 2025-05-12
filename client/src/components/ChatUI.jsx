@@ -29,16 +29,16 @@ export default function ChatUI() {
     if (!input.trim()) return;
 
     const userMessage = { text: input, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
 
     try {
       const { data } = await getTextResponse({ variables: { text: input } });
       const botMessage = { text: data.generateTextResponse, sender: 'bot' };
-      setMessages(prev => [...prev, botMessage]);
+      setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error('Text response error:', error);
-      setMessages(prev => [...prev, { text: 'Failed to get response.', sender: 'bot' }]);
+      setMessages((prev) => [...prev, { text: 'Failed to get response.', sender: 'bot' }]);
     }
   };
 
@@ -49,7 +49,7 @@ export default function ChatUI() {
       mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunksRef.current = [];
 
-      mediaRecorderRef.current.ondataavailable = event => {
+      mediaRecorderRef.current.ondataavailable = (event) => {
         audioChunksRef.current.push(event.data);
       };
 
@@ -67,7 +67,7 @@ export default function ChatUI() {
     }
   };
 
-  const sendAudio = async audioBlob => {
+  const sendAudio = async (audioBlob) => {
     const file = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
     console.log('Blob type:', audioBlob.type);
     try {
@@ -87,14 +87,14 @@ export default function ChatUI() {
         sender: 'bot',
       };
 
-      setMessages(prev => [...prev, userMessage, botMessage]);
+      setMessages((prev) => [...prev, userMessage, botMessage]);
     } catch (error) {
       console.error('Upload error:', error);
-      setMessages(prev => [...prev, { text: 'Failed to transcribe audio.', sender: 'bot' }]);
+      setMessages((prev) => [...prev, { text: 'Failed to transcribe audio.', sender: 'bot' }]);
     }
   };
 
-  const fetchToneAnalysis = async transcription => {
+  const fetchToneAnalysis = async (transcription) => {
     try {
       const response = await fetch('/api/tone-analysis', {
         method: 'POST',
@@ -161,8 +161,10 @@ export default function ChatUI() {
       <HStack mt={4}>
         <Input
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           placeholder="Type or record..."
+          bg="white"
+          borderColor="gray.200"
         />
         <IconButton
           aria-label="Send message"

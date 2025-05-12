@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const login = token => {
+  const login = (token) => {
     AuthService.login(token);
     const profile = AuthService.getProfile();
     setUser(profile);
