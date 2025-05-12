@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 import fs from 'fs';
 import path from 'path';
@@ -5,6 +6,7 @@ import { GraphQLUpload } from 'graphql-upload';
 import { SpeechClient } from '@google-cloud/speech';
 import User from '../models/User.js';
 import Mood from '../models/Mood.js'; // Import Mood model
+import Memory from '../models/memory.js'; // Import Memory model
 import { signToken } from '../utils/auth.js';
 import OpenAI from 'openai';
 
@@ -34,19 +36,16 @@ const resolvers = {
 
     getMe: async (_parent, _args, context) => {
       if (context.user) {
-        return await User.findById(context.user._id);
+        return await User.findById(context.user._id).populate('memories');
       }
+
       throw new Error('You need to be logged in!');
     },
 
-    // Add getMoods query
-    getMoods: async () => {
-      try {
-        return await Mood.find().sort({ createdAt: -1 }); // Sort by most recent
-      } catch (error) {
-        console.error('Error fetching moods:', error);
-        throw new Error('Failed to fetch moods');
-      }
+  
+    getMyMoods: async (_, __, context) => {
+      if (!context.user) throw new Error('Not authenticated');
+      return await Mood.find({ user: context.user._id }).sort({ createdAt: -1 });
     },
   },
 
@@ -54,6 +53,7 @@ const resolvers = {
     createUser: async (_parent, { input }) => {
       const user = await User.create(input);
       if (!user) throw new Error('Something is wrong!');
+
       const token = signToken(user.username, user.email, user._id);
       return { token, user };
     },
@@ -76,7 +76,8 @@ const resolvers = {
           messages: [
             {
               role: 'system',
-              content: `You are a helpful, creative AI assistant. Based on the user's message, respond in an emotionally supportive, poetic, or thoughtful way. Offer encouragement or help them express themselves.`,
+              content:
+                `You are a helpful, creative AI assistant. Based on the user's message, respond in an emotionally supportive, poetic, or thoughtful way. Offer encouragement or help them express themselves.`,
             },
             {
               role: 'user',
@@ -97,8 +98,10 @@ const resolvers = {
     transcribeAudio: async (_parent, { audio }) => {
       const { createReadStream, filename } = await audio;
       const stream = createReadStream();
+
       const uploadsDir = path.join(process.cwd(), 'uploads');
       if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+
       const filePath = path.join(uploadsDir, filename);
 
       await new Promise((resolve, reject) => {
@@ -110,12 +113,14 @@ const resolvers = {
 
       const stats = fs.statSync(filePath);
       console.log(`Saved file size: ${stats.size} bytes`);
+
       if (stats.size < 1000) {
         fs.unlinkSync(filePath);
         throw new Error('Uploaded file seems too small or empty.');
       }
 
       const audioBytes = fs.readFileSync(filePath).toString('base64');
+
       const request = {
         audio: { content: audioBytes },
         config: {
@@ -129,24 +134,25 @@ const resolvers = {
       fs.unlinkSync(filePath);
 
       const transcript = response.results.map(r => r.alternatives[0].transcript).join('\n');
+
+
       console.log('Transcript:', transcript);
 
-      if (!transcript)
+      if (!transcript) {
         return {
           transcript: '',
           supportiveResponse: 'Could not transcribe audio.',
         };
+      }
 
-      // OpenAI Chat Completion for Tone Analysis
       try {
         const toneAnalysis = await openai.chat.completions.create({
           model: 'gpt-3.5-turbo',
           messages: [
             {
               role: 'system',
-              content:
-                `You are a supportive AI companion that helps users express themselves. Based on the user's spoken message, you may provide emotional support, or help them write a short poem, story, or thoughtful reflection if appropriate. Always respond directly to the user as a friendly, empathetic voice.
-                `.trim(),
+              content: `You are a supportive AI companion that helps users express themselves. Based on the user's spoken message, you may provide emotional support, or help them write a short poem, story, or thoughtful reflection if appropriate. Always respond directly to the user as a friendly, empathetic voice.`,
+
             },
             {
               role: 'user',
@@ -165,18 +171,55 @@ const resolvers = {
       }
     },
 
-    // Add addMood mutation
-    addMood: async (_parent, { mood }) => {
-      try {
-        const newMood = new Mood({ mood, createdAt: new Date().toISOString() });
-        await newMood.save();
-        return newMood;
-      } catch (error) {
-        console.error('Error adding mood:', error);
-        throw new Error('Failed to add mood');
+  
+   saveMood: async (_, { input }, context) => {
+      if (!context.user) throw new Error('Not authenticated');
+
+      const newMood = await Mood.create({
+        ...input,
+        user: context.user._id,
+      });
+
+      return newMood;
+    },
+  
+
+    addMemory: async (_parent, { content, imageUrl }, context) => {
+      if (context.user) {
+        const memory = await Memory.create({
+          content,
+          imageUrl,
+          createdAt: new Date().toISOString(),
+          user: context.user._id,
+        });
+
+        await User.findByIdAndUpdate(
+          context.user._id,
+          { $push: { memories: memory._id } },
+          { new: true }
+        );
+
+        return memory;
       }
+
+      throw new Error('You need to be logged in!');
+    },
+
+    deleteMemory: async (_parent, { id }, context) => {
+      if (context.user) {
+        const memory = await Memory.findOneAndDelete({
+          _id: id,
+          user: context.user._id,
+        });
+
+        if (!memory) throw new Error('No memory found with this id!');
+        return true;
+      }
+
+      throw new Error('You need to be logged in!');
     },
   },
 };
 
 export default resolvers;
+

@@ -9,13 +9,13 @@ import {
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
-  DrawerHeader,
   DrawerBody,
   useColorModeValue,
   Heading,
 } from '@chakra-ui/react'; // Import Drawer components
 import { BsStars } from 'react-icons/bs';
-import { FaPaintBrush } from 'react-icons/fa';
+import { FaPaintBrush, FaSmileBeam } from 'react-icons/fa';
+import { FaCameraRetro } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
@@ -59,6 +59,20 @@ function Header() {
         <Flex align="center" gap={4}>
           {/* Mood Tracker */}
           <MoodTracker />
+          <Button
+            as={RouterLink}
+            to="/my-mood"
+            leftIcon={<FaSmileBeam />}
+            colorScheme="purple"
+            variant="solid"
+            size="md"
+            bgGradient="linear(to-r, purple.500, pink.500)"
+            _hover={{
+              bgGradient: 'linear(to-r, purple.600, pink.600)',
+            }}
+          >
+            Mood Tracker
+          </Button>
 
           {/* Healing Canvas Button */}
           <Button
@@ -74,6 +88,20 @@ function Header() {
             }}
           >
             Healing Canvas
+          </Button>
+          <Button
+            as={RouterLink}
+            to="/my-memories"
+            leftIcon={<FaCameraRetro />}
+            colorScheme="purple"
+            variant="solid"
+            size="md"
+            bgGradient="linear(to-r, purple.500, pink.500)"
+            _hover={{
+              bgGradient: 'linear(to-r, purple.600, pink.600)',
+            }}
+          >
+            My Memories
           </Button>
 
           {/* Button to open Chat Drawer */}
@@ -92,10 +120,10 @@ function Header() {
             Open Chat
           </Button>
 
-          {isAuthenticated ? (
+          {isAuthenticated && user ? (
             <>
               <Text fontWeight="medium" color="purple.700">
-                Hi, {user?.username}
+                Welcome, {user?.username}
               </Text>
               <Button
                 onClick={logout}

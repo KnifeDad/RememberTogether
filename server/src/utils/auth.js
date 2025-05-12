@@ -10,6 +10,7 @@ export const authenticateToken = ({ req }) => {
   // If the token is sent in the authorization header, extract the token from the header
   if (req.headers.authorization) {
     token = token.split(' ').pop().trim();
+    console.log('🔐 Received token:', token);
   }
   // If no token is provided, return the request object as is
   if (!token) {
