@@ -33,8 +33,9 @@ import {
   FaSave,
   FaFolderOpen,
   FaLungs,
+  FaPaintBrush,
 } from 'react-icons/fa';
-import { Canvas, IText, Circle, Rect, PencilBrush, Line, PatternBrush, Path } from 'fabric';
+import { Canvas, IText, Circle, Rect, PencilBrush, Line, PatternBrush, Path, Group } from 'fabric';
 
 const emotionColors = [
   {
@@ -298,7 +299,7 @@ const HealingCanvas = () => {
   const [canvas, setCanvas] = useState(null);
   const [brushSize, setBrushSize] = useState(5);
   const [selectedColor, setSelectedColor] = useState('#000000');
-  const [currentTool, setCurrentTool] = useState('pencil');
+  const [currentTool, setCurrentTool] = useState('paintbrush');
   const [isDrawing, setIsDrawing] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [gridSize, setGridSize] = useState(20);
@@ -315,39 +316,19 @@ const HealingCanvas = () => {
       width: Math.max(window.innerWidth - 40, 800),
       height: Math.max(window.innerHeight - 100, 600),
       backgroundColor: '#ffffff',
-      isDrawingMode: true,
+      isDrawingMode: false,
+      preserveObjectStacking: true,
     });
-
-    // Initialize the brush
-    const selectedTextureObj = brushTextures.find(t => t.name === selectedTexture);
-    if (selectedTextureObj) {
-      const BrushClass = selectedTextureObj.brush;
-      const brush = new BrushClass(canvas);
-      brush.width = brushSize;
-      brush.color = selectedColor;
-      canvas.freeDrawingBrush = brush;
-    } else {
-      const brush = new PencilBrush(canvas);
-      brush.width = brushSize;
-      brush.color = selectedColor;
-      canvas.freeDrawingBrush = brush;
-    }
 
     // Add path:created event to ensure paths are preserved
     canvas.on('path:created', function (e) {
       const path = e.path;
-      path.selectable = true;
-      path.evented = true;
-      // Create a new path object to ensure it's properly added to the canvas
-      const newPath = new Path(path.path, {
-        fill: null,
-        stroke: selectedColor,
-        strokeWidth: brushSize,
+      path.set({
         selectable: true,
         evented: true,
+        stroke: selectedColor,
+        strokeWidth: brushSize,
       });
-      canvas.add(newPath);
-      canvas.requestRenderAll();
     });
 
     setCanvas(canvas);
@@ -369,276 +350,175 @@ const HealingCanvas = () => {
     };
   }, []);
 
-  const handleToolSelect = tool => {
+  // Update brush when size or color changes
+  useEffect(() => {
     if (!canvas) return;
+
     // Remove all existing event listeners
     canvas.off('mouse:down');
     canvas.off('mouse:move');
     canvas.off('mouse:up');
     canvas.off('path:created');
-    setCurrentTool(tool);
 
-    switch (tool) {
-      case 'pencil': {
-        canvas.isDrawingMode = true;
-        const selectedTextureObj = brushTextures.find(t => t.name === selectedTexture);
-        if (selectedTextureObj) {
-          const BrushClass = selectedTextureObj.brush;
-          const brush = new BrushClass(canvas);
-          brush.width = brushSize;
-          brush.color = selectedColor;
-          canvas.freeDrawingBrush = brush;
-        } else {
-          const brush = new PencilBrush(canvas);
-          brush.width = brushSize;
-          brush.color = selectedColor;
-          canvas.freeDrawingBrush = brush;
-        }
-
-        // Handle path creation
-        canvas.on('path:created', function (e) {
-          const path = e.path;
-          path.selectable = true;
-          path.evented = true;
-          // Create a new path object to ensure it's properly added to the canvas
-          const newPath = new Path(path.path, {
-            fill: null,
-            stroke: selectedColor,
-            strokeWidth: brushSize,
-            selectable: true,
-            evented: true,
-          });
-          canvas.add(newPath);
-          canvas.requestRenderAll();
-        });
-        break;
-      }
-      case 'eraser': {
-        canvas.isDrawingMode = true;
-        const brush = new PencilBrush(canvas);
-        brush.width = brushSize;
-        brush.color = '#ffffff';
-        canvas.freeDrawingBrush = brush;
-        break;
-      }
-      case 'text': {
-        canvas.isDrawingMode = false;
-        const addText = options => {
-          const pointer = canvas.getPointer(options.e);
-          const text = new IText('', {
-            left: pointer.x,
-            top: pointer.y,
-            fontFamily: 'Arial',
-            fontSize: 20,
-            fill: selectedColor,
-            selectable: true,
-          });
-          canvas.add(text);
-          canvas.setActiveObject(text);
-          text.enterEditing();
-        };
-        canvas.on('mouse:down', addText);
-        break;
-      }
-      case 'line': {
-        canvas.isDrawingMode = false;
-        let line = null;
-        let startX = 0;
-        let startY = 0;
-
-        const onMouseDown = options => {
-          const pointer = canvas.getPointer(options.e);
-          startX = pointer.x;
-          startY = pointer.y;
-
-          line = new Line([startX, startY, startX, startY], {
-            stroke: selectedColor,
-            strokeWidth: brushSize,
-            selectable: true,
-          });
-
-          canvas.add(line);
-          canvas.setActiveObject(line);
-        };
-
-        const onMouseMove = options => {
-          if (!line) return;
-          const pointer = canvas.getPointer(options.e);
-          line.set({
-            x2: pointer.x,
-            y2: pointer.y,
-          });
-          canvas.requestRenderAll();
-        };
-
-        const onMouseUp = () => {
-          if (line) {
-            canvas.discardActiveObject();
-            canvas.requestRenderAll();
-          }
-          line = null;
-        };
-
-        canvas.on('mouse:down', onMouseDown);
-        canvas.on('mouse:move', onMouseMove);
-        canvas.on('mouse:up', onMouseUp);
-        break;
-      }
-      case 'circle': {
-        canvas.isDrawingMode = false;
-        let circle = null;
-        let startX = 0;
-        let startY = 0;
-
-        const onMouseDown = options => {
-          const pointer = canvas.getPointer(options.e);
-          startX = pointer.x;
-          startY = pointer.y;
-
-          circle = new Circle({
-            left: startX,
-            top: startY,
-            radius: 20,
-            fill: 'transparent',
-            stroke: selectedColor,
-            strokeWidth: brushSize,
-            selectable: true,
-            originX: 'center',
-            originY: 'center',
-          });
-
-          canvas.add(circle);
-          canvas.setActiveObject(circle);
-        };
-
-        const onMouseMove = options => {
-          if (!circle) return;
-          const pointer = canvas.getPointer(options.e);
-          const dx = pointer.x - startX;
-          const dy = pointer.y - startY;
-          const radius = Math.max(Math.sqrt(dx * dx + dy * dy), 20);
-
-          circle.set({
-            radius: radius,
-            left: startX,
-            top: startY,
-          });
-          canvas.requestRenderAll();
-        };
-
-        const onMouseUp = () => {
-          if (circle) {
-            canvas.discardActiveObject();
-            canvas.requestRenderAll();
-          }
-          circle = null;
-        };
-
-        canvas.on('mouse:down', onMouseDown);
-        canvas.on('mouse:move', onMouseMove);
-        canvas.on('mouse:up', onMouseUp);
-        break;
-      }
-      case 'rectangle': {
-        canvas.isDrawingMode = false;
-        let rect = null;
-        let startX = 0;
-        let startY = 0;
-
-        const onMouseDown = options => {
-          const pointer = canvas.getPointer(options.e);
-          startX = pointer.x;
-          startY = pointer.y;
-
-          rect = new Rect({
-            left: startX,
-            top: startY,
-            width: 40,
-            height: 40,
-            fill: 'transparent',
-            stroke: selectedColor,
-            strokeWidth: brushSize,
-            selectable: true,
-            originX: 'center',
-            originY: 'center',
-          });
-
-          canvas.add(rect);
-          canvas.setActiveObject(rect);
-        };
-
-        const onMouseMove = options => {
-          if (!rect) return;
-          const pointer = canvas.getPointer(options.e);
-          const width = Math.max(Math.abs(pointer.x - startX) * 2, 40);
-          const height = Math.max(Math.abs(pointer.y - startY) * 2, 40);
-
-          rect.set({
-            width: width,
-            height: height,
-            left: startX,
-            top: startY,
-          });
-          canvas.requestRenderAll();
-        };
-
-        const onMouseUp = () => {
-          if (rect) {
-            canvas.discardActiveObject();
-            canvas.requestRenderAll();
-          }
-          rect = null;
-        };
-
-        canvas.on('mouse:down', onMouseDown);
-        canvas.on('mouse:move', onMouseMove);
-        canvas.on('mouse:up', onMouseUp);
-        break;
-      }
-      default: {
-        canvas.isDrawingMode = false;
-        canvas.freeDrawingBrush = null;
-        break;
-      }
-    }
-    canvas.requestRenderAll();
-  };
-
-  // Update brush when size or color changes
-  useEffect(() => {
-    if (!canvas) return;
-    if (currentTool === 'pencil') {
+    if (currentTool === 'pencil' || currentTool === 'paintbrush') {
       canvas.isDrawingMode = true;
-      const selectedTextureObj = brushTextures.find(t => t.name === selectedTexture);
-      if (selectedTextureObj) {
-        const BrushClass = selectedTextureObj.brush;
-        const brush = new BrushClass(canvas);
-        brush.width = brushSize;
-        brush.color = selectedColor;
-        canvas.freeDrawingBrush = brush;
-      } else {
-        const brush = new PencilBrush(canvas);
-        brush.width = brushSize;
-        brush.color = selectedColor;
-        canvas.freeDrawingBrush = brush;
-      }
+      const brush = new PencilBrush(canvas);
+      brush.width = brushSize;
+      brush.color = selectedColor;
+      canvas.freeDrawingBrush = brush;
+
+      // Add path:created event handler
+      canvas.on('path:created', (e) => {
+        const path = e.path;
+        path.set({
+          selectable: true,
+          evented: true,
+          stroke: selectedColor,
+          strokeWidth: brushSize,
+        });
+      });
     } else if (currentTool === 'eraser') {
       canvas.isDrawingMode = true;
       const brush = new PencilBrush(canvas);
       brush.width = brushSize;
       brush.color = '#ffffff';
       canvas.freeDrawingBrush = brush;
+
+      // Add path:created event handler for eraser
+      canvas.on('path:created', (e) => {
+        const path = e.path;
+        path.set({
+          selectable: false,
+          evented: false,
+          stroke: '#ffffff',
+          strokeWidth: brushSize,
+        });
+      });
+    } else if (currentTool === 'text') {
+      canvas.isDrawingMode = false;
+      canvas.on('mouse:down', (options) => {
+        const pointer = canvas.getPointer(options.e);
+        const text = new IText('', {
+          left: pointer.x,
+          top: pointer.y,
+          fontFamily: 'Arial',
+          fontSize: 20,
+          fill: selectedColor,
+        });
+        canvas.add(text);
+        canvas.setActiveObject(text);
+        text.enterEditing();
+      });
+    } else if (currentTool === 'line') {
+      canvas.isDrawingMode = false;
+      let startPoint;
+      let line;
+      canvas.on('mouse:down', (options) => {
+        startPoint = canvas.getPointer(options.e);
+        line = new Line([startPoint.x, startPoint.y, startPoint.x, startPoint.y], {
+          stroke: selectedColor,
+          strokeWidth: brushSize,
+        });
+        canvas.add(line);
+      });
+      canvas.on('mouse:move', (options) => {
+        if (!line) return;
+        const pointer = canvas.getPointer(options.e);
+        line.set({
+          x2: pointer.x,
+          y2: pointer.y,
+        });
+        canvas.requestRenderAll();
+      });
+      canvas.on('mouse:up', () => {
+        line = null;
+      });
+    } else if (currentTool === 'circle') {
+      canvas.isDrawingMode = false;
+      let startPoint;
+      let circle;
+      canvas.on('mouse:down', (options) => {
+        startPoint = canvas.getPointer(options.e);
+        circle = new Circle({
+          left: startPoint.x,
+          top: startPoint.y,
+          radius: 0,
+          stroke: selectedColor,
+          strokeWidth: brushSize,
+          fill: 'transparent',
+        });
+        canvas.add(circle);
+      });
+      canvas.on('mouse:move', (options) => {
+        if (!circle) return;
+        const pointer = canvas.getPointer(options.e);
+        const radius = Math.sqrt(
+          Math.pow(pointer.x - startPoint.x, 2) + Math.pow(pointer.y - startPoint.y, 2)
+        );
+        circle.set({
+          radius: radius,
+        });
+        canvas.requestRenderAll();
+      });
+      canvas.on('mouse:up', () => {
+        circle = null;
+      });
+    } else if (currentTool === 'rectangle') {
+      canvas.isDrawingMode = false;
+      let startPoint;
+      let rect;
+      canvas.on('mouse:down', (options) => {
+        startPoint = canvas.getPointer(options.e);
+        rect = new Rect({
+          left: startPoint.x,
+          top: startPoint.y,
+          width: 0,
+          height: 0,
+          stroke: selectedColor,
+          strokeWidth: brushSize,
+          fill: 'transparent',
+        });
+        canvas.add(rect);
+      });
+      canvas.on('mouse:move', (options) => {
+        if (!rect) return;
+        const pointer = canvas.getPointer(options.e);
+        rect.set({
+          width: pointer.x - startPoint.x,
+          height: pointer.y - startPoint.y,
+        });
+        canvas.requestRenderAll();
+      });
+      canvas.on('mouse:up', () => {
+        rect = null;
+      });
     } else {
       canvas.isDrawingMode = false;
       canvas.freeDrawingBrush = null;
     }
+
     canvas.requestRenderAll();
-  }, [canvas, brushSize, selectedColor, currentTool, selectedTexture]);
+  }, [canvas, brushSize, selectedColor, currentTool]);
 
   const saveDrawing = () => {
     if (!canvas) return;
     try {
-      const drawingData = canvas.toJSON();
+      // Save the current drawing state
+      const drawingData = canvas.toJSON([
+        'selectable',
+        'evented',
+        'lockMovementX',
+        'lockMovementY',
+        'lockRotation',
+        'lockScalingX',
+        'lockScalingY',
+        'hasControls',
+        'hasBorders',
+        'transparentCorners',
+        'cornerColor',
+        'cornerSize',
+        'padding',
+      ]);
       localStorage.setItem('healingCanvasDrawing', JSON.stringify(drawingData));
       toast({
         title: 'Drawing saved',
@@ -665,7 +545,37 @@ const HealingCanvas = () => {
       const savedDrawing = localStorage.getItem('healingCanvasDrawing');
       if (savedDrawing) {
         canvas.loadFromJSON(JSON.parse(savedDrawing), () => {
-          canvas.renderAll();
+          // Reinitialize the canvas state
+          canvas.isDrawingMode = currentTool === 'pencil' || currentTool === 'eraser';
+          // Restore object properties
+          canvas.getObjects().forEach((obj) => {
+            if (obj.type !== 'group') {
+              obj.selectable = true;
+              obj.evented = true;
+              obj.lockMovementX = false;
+              obj.lockMovementY = false;
+              obj.lockRotation = false;
+              obj.lockScalingX = false;
+              obj.lockScalingY = false;
+              obj.hasControls = true;
+              obj.hasBorders = true;
+              obj.transparentCorners = false;
+              obj.cornerColor = 'rgba(102,153,255,0.8)';
+              obj.cornerSize = 12;
+              obj.padding = 5;
+            }
+          });
+          // Reinitialize the brush
+          if (currentTool === 'pencil') {
+            const brush = new PencilBrush(canvas);
+            brush.width = brushSize;
+            brush.color = selectedColor;
+            canvas.freeDrawingBrush = brush;
+          } else if (currentTool === 'eraser') {
+            canvas.isDrawingMode = true;
+          }
+          // Force a render
+          canvas.requestRenderAll();
           toast({
             title: 'Drawing loaded',
             description: 'Your previous drawing has been restored from local storage',
@@ -696,23 +606,14 @@ const HealingCanvas = () => {
   };
 
   // Add texture selection handler
-  const handleTextureSelect = texture => {
+  const handleTextureSelect = (texture) => {
     setSelectedTexture(texture);
     if (currentTool === 'pencil' && canvas) {
       canvas.isDrawingMode = true;
-      const selectedTextureObj = brushTextures.find(t => t.name === texture);
-      if (selectedTextureObj) {
-        const BrushClass = selectedTextureObj.brush;
-        const brush = new BrushClass(canvas);
-        brush.width = brushSize;
-        brush.color = selectedColor;
-        canvas.freeDrawingBrush = brush;
-      } else {
-        const brush = new PencilBrush(canvas);
-        brush.width = brushSize;
-        brush.color = selectedColor;
-        canvas.freeDrawingBrush = brush;
-      }
+      const brush = new PencilBrush(canvas);
+      brush.width = brushSize;
+      brush.color = selectedColor;
+      canvas.freeDrawingBrush = brush;
       canvas.requestRenderAll();
     }
   };
@@ -736,6 +637,93 @@ const HealingCanvas = () => {
     canvas.requestRenderAll();
   };
 
+  // Add path:created event to ensure paths are preserved
+  useEffect(() => {
+    if (!canvas) return;
+    const handlePathCreated = (e) => {
+      const path = e.path;
+      path.set({
+        selectable: true,
+        evented: true,
+        stroke: selectedColor,
+        strokeWidth: brushSize,
+      });
+      canvas.requestRenderAll();
+    };
+
+    canvas.on('path:created', handlePathCreated);
+
+    return () => {
+      canvas.off('path:created', handlePathCreated);
+    };
+  }, [canvas, selectedColor, brushSize]);
+
+  // Add canvas modification observer
+  useEffect(() => {
+    if (!canvas) return;
+
+    const handleObjectModified = (e) => {
+      console.log('Object modified:', e.target);
+    };
+
+    const handleObjectRemoved = (e) => {
+      console.log('Object removed:', e.target);
+      console.log('Remaining objects:', canvas.getObjects().length);
+    };
+
+    canvas.on('object:modified', handleObjectModified);
+    canvas.on('object:removed', handleObjectRemoved);
+
+    return () => {
+      canvas.off('object:modified', handleObjectModified);
+      canvas.off('object:removed', handleObjectRemoved);
+    };
+  }, [canvas]);
+
+  const handleToolSelect = (tool) => {
+    if (!canvas) return;
+    setCurrentTool(tool);
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+  };
+
+  // Add grid functionality
+  useEffect(() => {
+    if (!canvas || !showGrid) return;
+
+    const drawGrid = () => {
+      const ctx = canvas.getContext();
+      const width = canvas.width;
+      const height = canvas.height;
+
+      ctx.strokeStyle = '#ddd';
+      ctx.lineWidth = 0.5;
+
+      for (let i = 0; i < width; i += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, height);
+        ctx.stroke();
+      }
+
+      for (let i = 0; i < height; i += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(width, i);
+        ctx.stroke();
+      }
+    };
+
+    if (showGrid) {
+      canvas.on('after:render', drawGrid);
+      canvas.requestRenderAll();
+    }
+
+    return () => {
+      canvas.off('after:render', drawGrid);
+    };
+  }, [canvas, showGrid, gridSize]);
+
   return (
     <Box p={4}>
       <Flex
@@ -749,9 +737,16 @@ const HealingCanvas = () => {
       >
         <HStack spacing={2}>
           <IconButton
+            icon={<FaPaintBrush />}
+            onClick={() => handleToolSelect('paintbrush')}
+            colorScheme={currentTool === 'paintbrush' ? 'blue' : 'gray'}
+            aria-label="Paintbrush"
+          />
+          <IconButton
             icon={<FaPencilAlt />}
             onClick={() => handleToolSelect('pencil')}
             colorScheme={currentTool === 'pencil' ? 'blue' : 'gray'}
+            aria-label="Pencil"
           />
           <IconButton
             icon={<FaEraser />}
@@ -809,7 +804,7 @@ const HealingCanvas = () => {
                   Brush Texture
                 </Text>
                 <SimpleGrid columns={2} spacing={2}>
-                  {brushTextures.map(texture => (
+                  {brushTextures.map((texture) => (
                     <Button
                       key={texture.name}
                       size="sm"
@@ -876,7 +871,7 @@ const HealingCanvas = () => {
                 <input
                   type="color"
                   value={selectedColor}
-                  onChange={e => setSelectedColor(e.target.value)}
+                  onChange={(e) => setSelectedColor(e.target.value)}
                   style={{
                     width: '100%',
                     height: '40px',
