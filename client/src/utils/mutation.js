@@ -40,3 +40,38 @@ export const GET_TEXT_RESPONSE = gql`
     generateTextResponse(text: $text)
   }
 `;
+export const GET_GROUPS = gql`
+  query Groups($search: String) {
+    groups(search: $search) {
+      id
+      name
+      description
+      createdBy {
+        username
+      }
+      members {
+        username
+      }
+    }
+  }
+`;
+export const CREATE_GROUP = gql`
+  mutation CreateGroup($name: String!, $description: String, $createdBy: ID!) {
+    createGroup(name: $name, description: $description, createdBy: $createdBy) {
+      id
+      name
+    }
+  }
+`;
+
+export const ADD_USER_TO_GROUP = gql`
+  mutation AddUserToGroup($groupId: ID!, $userId: ID!) {
+    addUserToGroup(groupId: $groupId, userId: $userId) {
+      id
+      members {
+        id
+        username
+      }
+    }
+  }
+`;
