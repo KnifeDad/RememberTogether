@@ -24,11 +24,16 @@ const server = new ApolloServer({
 
 const startApolloServer = async () => {
   await server.start();
-  await db.openUri(process.env.MONGODB_URI || 'mongodb://localhost:27017/remember-together');
 
   const app = express();
 
-  app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+  // Configure CORS for both development and production
+  app.use(cors({ 
+    origin: process.env.NODE_ENV === 'production' 
+      ? ['https://remember-together.onrender.com', 'http://localhost:3000']
+      : 'http://localhost:3000',
+    credentials: true 
+  }));
 
   // Important: Upload middleware must come before expressMiddleware
   app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 1 }));
