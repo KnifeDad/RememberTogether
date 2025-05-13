@@ -16,9 +16,10 @@ import Features from './pages/Features';
 import './styles.css';
 
 const uploadLink = createHttpLink({
-  uri: process.env.NODE_ENV === 'production'
-    ? 'https://remember-together-api.onrender.com/graphql'
-    : 'http://localhost:3001/graphql',
+  uri:
+    process.env.NODE_ENV === 'production'
+      ? 'https://remember-together-api.onrender.com/graphql'
+      : 'http://localhost:3001/graphql',
   credentials: 'include',
 });
 
