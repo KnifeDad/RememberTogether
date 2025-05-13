@@ -16,8 +16,10 @@ import Features from './pages/Features';
 import './styles.css';
 
 const uploadLink = createHttpLink({
-  uri: 'http://localhost:3001/graphql',
-  credentials: 'include', // or 'same-origin' depending on your setup
+  uri: process.env.NODE_ENV === 'production'
+    ? 'https://remember-together-api.onrender.com/graphql'
+    : 'http://localhost:3001/graphql',
+  credentials: 'include',
 });
 
 // Auth middleware to attach token

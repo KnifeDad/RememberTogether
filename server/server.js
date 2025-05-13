@@ -29,10 +29,10 @@ const startApolloServer = async () => {
 
   // Configure CORS for both development and production
   app.use(cors({ 
-    origin: process.env.NODE_ENV === 'production' 
-      ? ['https://remember-together.onrender.com', 'http://localhost:3000']
-      : 'http://localhost:3000',
-    credentials: true 
+    origin: ['https://remember-together.onrender.com', 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   }));
 
   // Important: Upload middleware must come before expressMiddleware
