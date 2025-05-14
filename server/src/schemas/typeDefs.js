@@ -36,6 +36,7 @@ const typeDefs = gql`
     createdAt: String!
   }
 
+
   type Memory {
     _id: ID!
     content: String

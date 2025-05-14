@@ -124,10 +124,6 @@ const AddMemoryForm = () => {
     },
   });
 
-  // Lazy query to fetch memories on button click
-  const [fetchMemories, { called, loading: fetching, data, error }] = useLazyQuery(GET_MEMORIES);
-  const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim() && mediaFiles.length === 0) return;

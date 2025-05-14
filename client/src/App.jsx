@@ -20,12 +20,15 @@ import CommunityPage from './pages/CreateGroup';
 import './styles.css';
 
 // Upload link that handles both regular and file upload GraphQL operations
+
 const uploadLink = createUploadLink({
-  uri: 'http://localhost:3001/graphql',
+  uri:
+    process.env.NODE_ENV === 'production'
+      ? 'https://remember-together-api.onrender.com/graphql'
+      : 'http://localhost:3001/graphql',
   headers: {
     'Apollo-Require-Preflight': 'true',
   },
-  credentials: 'include',
 });
 
 // Auth middleware
