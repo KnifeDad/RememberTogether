@@ -30,7 +30,10 @@ const uploadLink = createUploadLink({
 
 // Auth middleware
 const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
   const token = localStorage.getItem('id_token');
+  console.log('Token from localStorage:', token); // Debug log
+  // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
@@ -43,6 +46,11 @@ const authLink = setContext((_, { headers }) => {
 const client = new ApolloClient({
   link: authLink.concat(uploadLink),
   cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'network-only',
+    },
+  },
 });
 
 function App() {

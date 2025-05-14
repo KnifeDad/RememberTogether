@@ -42,12 +42,39 @@ export const GET_TEXT_RESPONSE = gql`
 `;
 
 export const ADD_MEMORY = gql`
-  mutation AddMemory($content: String, $imageUrl: String) {
-    addMemory(content: $content, imageUrl: $imageUrl) {
+  mutation AddMemory(
+    $content: String
+    $media: [MediaInput]
+    $createdAt: String
+    $category: String
+    $reminder: ReminderInput
+  ) {
+    addMemory(
+      content: $content
+      media: $media
+      createdAt: $createdAt
+      category: $category
+      reminder: $reminder
+    ) {
       _id
       content
-      imageUrl
+      media {
+        type
+        url
+        thumbnailUrl
+        duration
+        size
+        mimeType
+        createdAt
+      }
       createdAt
+      category
+      reminder {
+        enabled
+        date
+        type
+        lastNotified
+      }
     }
   }
 `;

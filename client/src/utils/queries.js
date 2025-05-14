@@ -1,26 +1,55 @@
 import { gql } from '@apollo/client';
 
 export const GET_ME = gql`
-  query getMe {
-    me {
+  query me {
+    getMe {
       _id
       username
+      email
       memories {
         _id
         content
-        imageUrl
+        media {
+          type
+          url
+          thumbnailUrl
+          duration
+          size
+          mimeType
+          createdAt
+        }
         createdAt
+        category
+        reminder {
+          enabled
+          date
+          type
+          lastNotified
+        }
       }
     }
   }
 `;
+
 export const GET_MEMORIES = gql`
   query GetMemories($userId: ID!) {
     getMemories(userId: $userId) {
       _id
       content
-      imageUrl
+      media {
+        type
+        url
+        thumbnailUrl
+        duration
+        size
+        mimeType
+        createdAt
+      }
       createdAt
+      category
+      user {
+        userId
+      }
     }
   }
 `;

@@ -7,25 +7,29 @@ dotenv.config();
 export const authenticateToken = ({ req }) => {
   // Allows token to be sent via req.body, req.query, or headers
   let token = req.body.token || req.query.token || req.headers.authorization;
+  
   // If the token is sent in the authorization header, extract the token from the header
   if (req.headers.authorization) {
     token = token.split(' ').pop().trim();
     console.log('🔐 Received token:', token);
   }
-  // If no token is provided, return the request object as is
+
+  // If no token is provided, throw an error
   if (!token) {
-    return req;
+    throw new AuthenticationError('You need to be logged in!');
   }
+
   // Try to verify the token
   try {
     const { data } = jwt.verify(token, process.env.JWT_SECRET_KEY || '', { maxAge: '2hr' });
     // If the token is valid, attach the user data to the request object
     req.user = data;
+    console.log('✅ Token verified for user:', data.username);
   } catch (err) {
-    const invalidTokenMessage = 'Invalid token';
-    // If the token is invalid, log an error message
-    console.log(invalidTokenMessage);
+    console.error('❌ Token verification failed:', err.message);
+    throw new AuthenticationError('Invalid token. Please log in again.');
   }
+
   // Return the request object
   return req;
 };

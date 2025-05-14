@@ -8,7 +8,7 @@ import User from '../models/User.js';
 import Mood from '../models/Mood.js'; // Import Mood model
 import Memory from '../models/memory.js'; // Import Memory model
 import Group from '../models/Group.js'; // Import Group model
-import { signToken } from '../utils/auth.js';
+import { signToken, AuthenticationError } from '../utils/auth.js';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -36,11 +36,20 @@ const resolvers = {
     },
 
     getMe: async (_parent, _args, context) => {
-      if (context.user) {
-        return await User.findById(context.user._id).populate('memories');
+      if (!context.user) {
+        throw new AuthenticationError('You need to be logged in!');
       }
-
-      throw new Error('You need to be logged in!');
+      
+      try {
+        const user = await User.findById(context.user._id).populate('memories');
+        if (!user) {
+          throw new AuthenticationError('User not found. Please log in again.');
+        }
+        return user;
+      } catch (error) {
+        console.error('Error in getMe resolver:', error);
+        throw new AuthenticationError('Failed to fetch user data. Please try again.');
+      }
     },
     memories: async (_, { userId }, context) => {
       try {
@@ -57,6 +66,25 @@ const resolvers = {
     groups: async () => await Group.find().populate('members'),
   },
 
+  User: {
+    memories: async (parent) => {
+      try {
+        const memories = await Memory.find({ user: parent._id })
+          .sort({ createdAt: -1 })
+          .lean();
+        
+        // Format the dates
+        return memories.map(memory => ({
+          ...memory,
+          createdAt: memory.createdAt ? memory.createdAt.toISOString() : new Date().toISOString()
+        }));
+      } catch (error) {
+        console.error('Error fetching memories:', error);
+        return [];
+      }
+    }
+  },
+
   Mutation: {
     createUser: async (_parent, { input }) => {
       const user = await User.create(input);
@@ -66,15 +94,24 @@ const resolvers = {
       return { token, user };
     },
 
-    login: async (_parent, { username, email, password }) => {
-      const user = await User.findOne({ $or: [{ username }, { email }] });
-      if (!user) throw new Error("Can't find this user");
+    login: async (_parent, { email, password }) => {
+      try {
+        const user = await User.findOne({ email });
+        if (!user) {
+          throw new Error("Can't find this user");
+        }
 
-      const correctPw = await user.isCorrectPassword(password);
-      if (!correctPw) throw new Error('Wrong password!');
+        const correctPw = await user.isCorrectPassword(password);
+        if (!correctPw) {
+          throw new Error('Wrong password!');
+        }
 
-      const token = signToken(user.username, user.email, user._id);
-      return { token, user };
+        const token = signToken(user.username, user.email, user._id);
+        return { token, user };
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
     },
 
     generateTextResponse: async (_parent, { text }) => {
@@ -225,13 +262,27 @@ const resolvers = {
       return group;
     },
     // Add a memory
-    addMemory: async (_parent, { content, imageUrl }, context) => {
+
+
+    addMemory: async (_parent, { content, media, createdAt, category, reminder }, context) => {
       if (context.user) {
         const memory = await Memory.create({
           content,
-          imageUrl,
-          createdAt: new Date().toISOString(),
+          media: media || [],
           user: context.user._id,
+          createdAt: createdAt ? new Date(createdAt) : new Date(),
+          category: category || 'Personal',
+          reminder: reminder ? {
+            enabled: reminder.enabled,
+            date: reminder.date ? new Date(reminder.date) : null,
+            type: reminder.type || 'one-time',
+            lastNotified: null
+          } : {
+            enabled: false,
+            date: null,
+            type: 'one-time',
+            lastNotified: null
+          }
         });
 
         await User.findByIdAndUpdate(
@@ -248,12 +299,21 @@ const resolvers = {
 
     deleteMemory: async (_parent, { id }, context) => {
       if (context.user) {
+        // Delete the memory
         const memory = await Memory.findOneAndDelete({
           _id: id,
           user: context.user._id,
         });
 
         if (!memory) throw new Error('No memory found with this id!');
+
+        // Remove the memory reference from the user's memories array
+        await User.findByIdAndUpdate(
+          context.user._id,
+          { $pull: { memories: id } },
+          { new: true }
+        );
+
         return true;
       }
 

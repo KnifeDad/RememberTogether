@@ -39,10 +39,193 @@ const typeDefs = gql`
   type Memory {
     _id: ID!
     content: String
-    imageUrl: String
+
+
+
+    media: [Media]
+
+
+
     createdAt: String
+
+
+
+    category: String
+
+
+
+    reminder: Reminder
+
+
+
     user: User
   }
+
+  input MoodCategoryInput {
+    question: String!
+    answer: String!
+  }
+
+
+  type Media {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+
+
+    createdAt: String
+
+  }
+
+
+
+  input MediaInput {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+  }
+
+
+
+  type Reminder {
+
+    enabled: Boolean
+
+
+
+    date: String
+
+
+
+    type: String
+
+
+
+    lastNotified: String
+
+  }
+
+
+
+  type Media {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+
+
+    createdAt: String
+
+  }
+
+
+
+  input MediaInput {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+  }
+
+
+
+  type Reminder {
+
+    enabled: Boolean
+
+
+
+    date: String
+
+
+
+    type: String
+
+
+
+    lastNotified: String
+
+  }
+
+
 
   input MoodCategoryInput {
     question: String!
@@ -56,6 +239,22 @@ const typeDefs = gql`
     emotional: MoodCategoryInput!
     chores: MoodCategoryInput!
   }
+
+  input ReminderInput {
+
+    enabled: Boolean
+
+
+
+    date: String
+
+
+
+    type: String
+
+  }
+
+
 
   type TranscriptionResponse {
     transcript: String
@@ -76,13 +275,33 @@ const typeDefs = gql`
 
   type Mutation {
     createUser(input: UserInput!): AuthPayload
-    login(username: String, email: String, password: String!): AuthPayload
 
-    # ✅ Updated this line:
+
+
+    login(email: String!, password: String!): AuthPayload
+
+
+
     saveMood(input: MoodInput!): Mood
 
-    getMemories(userId: ID!): [Memory]
-    addMemory(content: String, imageUrl: String): Memory
+
+
+    addMemory(
+
+      content: String
+
+      media: [MediaInput]
+
+      createdAt: String
+
+      category: String
+
+      reminder: ReminderInput
+
+    ): Memory
+
+
+
     deleteMemory(id: ID!): Boolean
 
     generateTextResponse(text: String!): String
