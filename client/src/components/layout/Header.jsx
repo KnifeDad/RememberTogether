@@ -3,150 +3,186 @@ import {
   Flex,
   Link,
   Button,
-  Text,
   useDisclosure,
   Drawer,
   DrawerOverlay,
   DrawerContent,
   DrawerCloseButton,
-  DrawerHeader,
   DrawerBody,
-  useColorModeValue,
-  Heading,
-} from '@chakra-ui/react'; // Import Drawer components
+  VStack,
+  Tooltip,
+} from '@chakra-ui/react';
+import { FaBars, FaHome, FaSmileBeam, FaChartLine, FaPaintBrush, FaCameraRetro } from 'react-icons/fa'; // Added FaChartLine for Mood Tracker Graph
 import { BsStars } from 'react-icons/bs';
-import { FaPaintBrush } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import AuthModal from '../AuthModal';
-import ChatUI from '../ChatUI';
-import MoodTracker from '../MoodTracker'; // Import MoodTracker component
 
 function Header() {
-  const { isAuthenticated, logout, user } = useAuth();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isChatOpen, onOpen: onChatOpen, onClose: onChatClose } = useDisclosure();
-
-  const bgGradient = useColorModeValue(
-    'linear(to-r, purple.50, pink.50)',
-    'linear(to-r, purple.900, pink.900)'
-  );
-
-  console.log('User:', user); // Log user data for debugging
+  const { isOpen, onOpen, onClose } = useDisclosure(); // For Sidebar
 
   return (
     <Box
       as="header"
       py={4}
       px={8}
-      bgGradient={bgGradient}
+      bgGradient="linear(to-r, purple.50, pink.50)"
       borderBottom="1px solid"
-      borderColor={useColorModeValue('purple.100', 'purple.700')}
+      borderColor="purple.100"
     >
-      <Flex justify="space-between" align="center">
+      <Flex justify="center" align="center" position="relative">
+        {/* Sidebar Trigger Button */}
+        <Button
+          onClick={onOpen}
+          leftIcon={<FaBars />}
+          colorScheme="purple"
+          variant="outline"
+          size="md"
+          borderColor="purple.500"
+          _hover={{
+            bgGradient: 'linear(to-r, purple.500, pink.500)',
+            color: 'white',
+          }}
+          position="absolute"
+          left="0"
+        >
+          
+        </Button>
+
+        {/* Centered RememberTogether Sign */}
         <Link
           as={RouterLink}
           to="/"
-          fontSize="xl"
-          fontWeight="bold"
+          fontSize="3xl"
+          fontWeight="extrabold"
           bgGradient="linear(to-r, purple.600, pink.600)"
           bgClip="text"
           _hover={{ textDecoration: 'none' }}
         >
           RememberTogether
         </Link>
-
-        <Flex align="center" gap={4}>
-          {/* Mood Tracker */}
-          <MoodTracker />
-
-          {/* Healing Canvas Button */}
-          <Button
-            as={RouterLink}
-            to="/healing-canvas"
-            leftIcon={<FaPaintBrush />}
-            colorScheme="purple"
-            variant="solid"
-            size="md"
-            bgGradient="linear(to-r, purple.500, pink.500)"
-            _hover={{
-              bgGradient: 'linear(to-r, purple.600, pink.600)',
-            }}
-          >
-            Healing Canvas
-          </Button>
-
-          {/* Button to open Chat Drawer */}
-          <Button
-            leftIcon={<BsStars />}
-            colorScheme="purple"
-            variant="outline"
-            size="md"
-            borderColor="purple.500"
-            _hover={{
-              bgGradient: 'linear(to-r, purple.500, pink.500)',
-              color: 'white',
-            }}
-            onClick={onChatOpen}
-          >
-            Open Chat
-          </Button>
-
-          {isAuthenticated ? (
-            <>
-              <Text fontWeight="medium" color="purple.700">
-                Hi, {user?.username}
-              </Text>
-              <Button
-                onClick={logout}
-                colorScheme="purple"
-                variant="outline"
-                borderColor="purple.500"
-                _hover={{
-                  bgGradient: 'linear(to-r, purple.500, pink.500)',
-                  color: 'white',
-                }}
-              >
-                Logout
-              </Button>
-            </>
-          ) : (
-            <Button
-              colorScheme="purple"
-              bgGradient="linear(to-r, purple.500, pink.500)"
-              _hover={{
-                bgGradient: 'linear(to-r, purple.600, pink.600)',
-              }}
-              onClick={onOpen}
-            >
-              Get Started
-            </Button>
-          )}
-        </Flex>
       </Flex>
 
-      {/* Authentication Modal */}
-      <AuthModal isOpen={isOpen} onClose={onClose} />
-
-      {/* Chat Drawer */}
-      <Drawer isOpen={isChatOpen} placement="right" onClose={onChatClose} size="md">
+      {/* Sidebar Drawer */}
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
         <DrawerOverlay />
-        <DrawerContent bg="white">
+        <DrawerContent
+          w="100px" // Set custom width for the sidebar
+          maxW="100px" // Ensure the width doesn't exceed this value
+        >
           <DrawerCloseButton />
-          <Box p={4} bg="white" borderBottom="1px solid" borderColor="gray.200" position="relative">
-            <Heading
-              as="h2"
-              size="md"
-              textAlign="center"
-              bgGradient="linear(to-r, purple.600, pink.600)"
-              bgClip="text"
-            >
-              Kristyn.AI
-            </Heading>
-          </Box>
-          <DrawerBody p={0} bg="#FEB2B2">
-            {/* ChatUI Component for chat functionality */}
-            <ChatUI />
+          <DrawerBody>
+            <VStack align="start" spacing={4}>
+              {/* Home Icon */}
+              <Tooltip label="Home" placement="right">
+                <Button
+                  as={RouterLink}
+                  to="/"
+                  colorScheme="purple"
+                  variant="ghost"
+                  size="md"
+                  justifyContent="center"
+                  alignItems="center"
+                  _hover={{
+                    bgGradient: 'linear(to-r, purple.500, pink.500)',
+                    color: 'white',
+                  }}
+                >
+                  <FaHome />
+                </Button>
+              </Tooltip>
+
+              {/* Mood Tracker Graph Icon */}
+              <Tooltip label="Mood Tracker Graph" placement="right">
+                <Button
+                  as={RouterLink}
+                  to="/mood-tracker" // Navigate to the Mood Tracker Graph page
+                  colorScheme="purple"
+                  variant="ghost"
+                  size="md"
+                  justifyContent="center"
+                  alignItems="center"
+                  _hover={{
+                    bgGradient: 'linear(to-r, purple.500, pink.500)',
+                    color: 'white',
+                  }}
+                >
+                  <FaChartLine /> {/* Mood Tracker Graph Icon */}
+                </Button>
+              </Tooltip>
+
+              {/* Mood Tracker Icon */}
+              <Tooltip label="Mood Tracker" placement="right">
+                <Button
+                  as={RouterLink}
+                  to="/mood-tracker-feature" // Navigate to the Mood Tracker feature
+                  colorScheme="purple"
+                  variant="ghost"
+                  size="md"
+                  justifyContent="center"
+                  alignItems="center"
+                  _hover={{
+                    bgGradient: 'linear(to-r, purple.500, pink.500)',
+                    color: 'white',
+                  }}
+                >
+                  <FaSmileBeam /> {/* Mood Tracker Icon */}
+                </Button>
+              </Tooltip>
+
+              {/* Healing Canvas Icon */}
+              <Tooltip label="Healing Canvas" placement="right">
+                <Button
+                  as={RouterLink}
+                  to="/healing-canvas"
+                  colorScheme="purple"
+                  variant="ghost"
+                  size="md"
+                  justifyContent="center"
+                  alignItems="center"
+                  _hover={{
+                    bgGradient: 'linear(to-r, purple.500, pink.500)',
+                    color: 'white',
+                  }}
+                >
+                  <FaPaintBrush />
+                </Button>
+              </Tooltip>
+
+              {/* My Memories Icon */}
+              <Tooltip label="My Memories" placement="right">
+                <Button
+                  as={RouterLink}
+                  to="/my-memories"
+                  colorScheme="purple"
+                  variant="ghost"
+                  size="md"
+                  justifyContent="center"
+                  alignItems="center"
+                  _hover={{
+                    bgGradient: 'linear(to-r, purple.500, pink.500)',
+                    color: 'white',
+                  }}
+                >
+                  <FaCameraRetro />
+                </Button>
+              </Tooltip>
+
+              {/* Open Chat Icon */}
+              <Tooltip label="Open Chat" placement="right">
+                <Button
+                  colorScheme="purple"
+                  variant="ghost"
+                  size="md"
+                  justifyContent="center"
+                  alignItems="center"
+                  _hover={{
+                    bgGradient: 'linear(to-r, purple.500, pink.500)',
+                    color: 'white',
+                  }}
+                >
+                  <BsStars />
+                </Button>
+              </Tooltip>
+            </VStack>
           </DrawerBody>
         </DrawerContent>
       </Drawer>

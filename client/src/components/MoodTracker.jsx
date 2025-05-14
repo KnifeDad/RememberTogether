@@ -12,6 +12,8 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
+  Progress,
+  VStack,
 } from '@chakra-ui/react';
 import {
   LineChart,
@@ -58,56 +60,72 @@ const MoodTracker = () => {
   }));
 
   return (
-    <Box>
-      {/* Mood Input Form */}
-      <Box as="form" onSubmit={handleSubmit} display="flex" alignItems="center" gap={2} mb={4}>
-        <Select value={mood} onChange={handleMoodChange} placeholder="Mood" size="sm" width="120px">
-          <option value="excited">Excited</option>
-          <option value="happy">Happy</option>
-          <option value="calm">Calm</option>
-          <option value="neutral">Neutral</option>
-          <option value="sad">Sad</option>
-          <option value="angry">Angry</option>
-          <option value="anxious">Anxious</option>
-        </Select>
-        <Button type="submit" colorScheme="blue" size="sm">
-          Add
+    <Box bg="lightblue" minHeight="100vh" p={8}> {/* Light blue background */}
+      <VStack spacing={12} align="center" justify="center" width="100%">
+        {/* Mood Bar */}
+        <Box width="90%">
+          <Text fontSize="2xl" fontWeight="bold" mb={6}>
+            Mood Bar
+          </Text>
+          <Progress value={70} size="2xl" colorScheme="purple" borderRadius="md" />
+        </Box>
+
+        {/* Mood Input Form */}
+        <Box as="form" onSubmit={handleSubmit} display="flex" alignItems="center" gap={4} mb={6}>
+          <Select
+            value={mood}
+            onChange={handleMoodChange}
+            placeholder="Mood"
+            size="lg"
+            width="200px"
+          >
+            <option value="excited">Excited</option>
+            <option value="happy">Happy</option>
+            <option value="calm">Calm</option>
+            <option value="neutral">Neutral</option>
+            <option value="sad">Sad</option>
+            <option value="angry">Angry</option>
+            <option value="anxious">Anxious</option>
+          </Select>
+          <Button type="submit" colorScheme="blue" size="lg" padding="8">
+            Add
+          </Button>
+        </Box>
+
+        {/* Button to Open Modal */}
+        <Button onClick={onOpen} colorScheme="teal" size="lg" padding="8" width="300px" mb={6}>
+          View Mood Tracker Graph
         </Button>
-      </Box>
 
-      {/* Button to Open Modal */}
-      <Button onClick={onOpen} colorScheme="teal" size="sm" mb={4}>
-        View Mood Tracker Graph
-      </Button>
-
-      {/* Modal for Graph Visualization */}
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Mood Tracker Visualization</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {moodData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={graphData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="moodValue" stroke="#8884d8" activeDot={{ r: 8 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <Text>No mood data available. Add a mood to see the graph.</Text>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose} colorScheme="blue">
-              Close
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        {/* Modal for Graph Visualization */}
+        <Modal isOpen={isOpen} onClose={onClose} size="xl">
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Mood Tracker Visualization</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {moodData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={graphData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="moodValue" stroke="#8884d8" activeDot={{ r: 8 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <Text fontSize="lg">No mood data available. Add a mood to see the graph.</Text>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button onClick={onClose} colorScheme="blue" size="lg" padding="8">
+                Close
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </VStack>
     </Box>
   );
 };

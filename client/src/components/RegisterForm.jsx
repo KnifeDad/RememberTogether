@@ -22,8 +22,6 @@ function RegisterForm({ onRegisterSuccess }) {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [createUser, { loading }] = useMutation(CREATE_USER, {
     onCompleted: () => {
       onRegisterSuccess();
@@ -51,16 +49,6 @@ function RegisterForm({ onRegisterSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formState.password !== confirmPassword) {
-      toast({
-        title: 'Error',
-        description: 'Passwords do not match',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      return;
-    }
     await createUser({ variables: { input: formState } });
   };
 
@@ -114,33 +102,6 @@ function RegisterForm({ onRegisterSuccess }) {
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
                 onClick={() => setShowPassword(!showPassword)}
-                color={useColorModeValue('purple.600', 'purple.200')}
-                _hover={{ bg: 'transparent', color: 'pink.500' }}
-              />
-            </InputRightElement>
-          </InputGroup>
-        </FormControl>
-
-        <FormControl isRequired>
-          <FormLabel color={useColorModeValue('purple.700', 'purple.200')}>
-            Confirm Password
-          </FormLabel>
-          <InputGroup>
-            <Input
-              type={showConfirmPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              bg={inputBg}
-              borderColor={inputBorder}
-              _hover={{ borderColor: inputFocusBorder }}
-              _focus={{ borderColor: inputFocusBorder, boxShadow: `0 0 0 1px ${inputFocusBorder}` }}
-            />
-            <InputRightElement>
-              <IconButton
-                variant="ghost"
-                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                icon={showConfirmPassword ? <ViewOffIcon /> : <ViewIcon />}
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 color={useColorModeValue('purple.600', 'purple.200')}
                 _hover={{ bg: 'transparent', color: 'pink.500' }}
               />

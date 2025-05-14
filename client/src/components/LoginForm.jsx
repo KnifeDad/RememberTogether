@@ -1,4 +1,3 @@
-// LoginForm.jsx
 import React, { useState } from 'react';
 import {
   FormControl,
@@ -6,40 +5,36 @@ import {
   Input,
   Button,
   VStack,
-  useToast,
-  useColorModeValue,
+  Alert,
+  AlertIcon,
   InputGroup,
   InputRightElement,
   IconButton,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useMutation } from '@apollo/client';
+import { useAuth } from '../context/AuthContext';
 import { LOGIN_USER } from '../utils/mutation';
 
 function LoginForm({ onLoginSuccess }) {
   const [formState, setFormState] = useState({ email: '', password: '' });
+  const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuth();
+
   const [loginUser, { loading }] = useMutation(LOGIN_USER, {
     onCompleted: ({ login: loginData }) => {
       const { token, user } = loginData;
       localStorage.setItem('id_token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      login(token); // ✅ Important: update context so Header shows username
       if (onLoginSuccess) onLoginSuccess();
     },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+    onError: (err) => {
+      setErrorMessage(err.message);
     },
   });
-
-  const toast = useToast();
-  const inputBg = useColorModeValue('white', 'gray.700');
-  const inputBorder = useColorModeValue('purple.200', 'purple.700');
-  const inputFocusBorder = useColorModeValue('purple.500', 'purple.300');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,12 +43,17 @@ function LoginForm({ onLoginSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
     await loginUser({ variables: formState });
   };
 
+  const inputBg = useColorModeValue('white', 'gray.700');
+  const inputBorder = useColorModeValue('purple.200', 'purple.700');
+  const inputFocusBorder = useColorModeValue('purple.500', 'purple.300');
+
   return (
     <form onSubmit={handleSubmit}>
-      <VStack spacing={4} align="stretch">
+      <VStack spacing={4} align="stretch" bg={inputBg} p={6} borderRadius="lg" boxShadow="md">
         <FormControl isRequired>
           <FormLabel color={useColorModeValue('purple.700', 'purple.200')}>Email</FormLabel>
           <Input
@@ -61,6 +61,7 @@ function LoginForm({ onLoginSuccess }) {
             type="email"
             value={formState.email}
             onChange={handleChange}
+            placeholder="Enter your email"
             bg={inputBg}
             borderColor={inputBorder}
             _hover={{ borderColor: inputFocusBorder }}
@@ -76,6 +77,7 @@ function LoginForm({ onLoginSuccess }) {
               type={showPassword ? 'text' : 'password'}
               value={formState.password}
               onChange={handleChange}
+              placeholder="Enter your password"
               bg={inputBg}
               borderColor={inputBorder}
               _hover={{ borderColor: inputFocusBorder }}
@@ -84,6 +86,7 @@ function LoginForm({ onLoginSuccess }) {
             <InputRightElement>
               <IconButton
                 variant="ghost"
+                size="sm"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
                 onClick={() => setShowPassword(!showPassword)}
@@ -94,12 +97,19 @@ function LoginForm({ onLoginSuccess }) {
           </InputGroup>
         </FormControl>
 
+        {errorMessage && (
+          <Alert status="error">
+            <AlertIcon />
+            {errorMessage}
+          </Alert>
+        )}
+
         <Button
           type="submit"
           colorScheme="purple"
           size="lg"
           width="full"
-          mt={4}
+          mt={2}
           isLoading={loading}
           bgGradient="linear(to-r, purple.600, pink.600)"
           _hover={{

@@ -1,26 +1,48 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-const moodSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'User',
-  },
-  mood: {
-    type: String,
-    required: true,
-    enum: ['happy', 'sad', 'neutral', 'angry', 'anxious', 'excited', 'calm'],
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-  },
-  notes: {
-    type: String,
-    trim: true,
-  },
+const categorySchema = new Schema({
+
+  question1: String,
+
+  question2: String,
+
 });
 
-const Mood = mongoose.model('Mood', moodSchema);
 
-export default Mood; // Use ES Module export
+
+const moodSchema = new Schema({
+
+  health: categorySchema,
+
+  work: categorySchema,
+
+  social: categorySchema,
+
+  emotional: categorySchema,
+
+  chores: categorySchema,
+
+  user: {
+
+    type: Schema.Types.ObjectId,
+
+    ref: 'User',
+
+    required: true,
+
+  },
+
+  createdAt: {
+
+    type: Date,
+
+    default: Date.now,
+
+  },
+
+});
+
+
+
+export default model('Mood', moodSchema);
+

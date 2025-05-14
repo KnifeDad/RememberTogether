@@ -1,26 +1,27 @@
 import React from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
+import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { createUploadLink } from 'apollo-upload-client';
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
 import HealingCanvas from './components/HealingCanvas';
+import MemorySharing from './pages/MemorySharing';
+import MoodTrackerPage from './pages/MoodTrackerPage'; // Import the new Mood Tracker page
 import LandingPage from './pages/LandingPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Contact from './pages/Contact';
 import Features from './pages/Features';
 import './styles.css';
+import Header from './components/layout/Header';
 
-// Replace createHttpLink with createUploadLink
-const uploadLink = createUploadLink({
-  uri: 'http://localhost:3001/graphql',
-  headers: {
-    'Apollo-Require-Preflight': 'true',
-  },
-  credentials: 'include', // optional, depends on CORS/auth
+const uploadLink = createHttpLink({
+  uri:
+    process.env.NODE_ENV === 'production'
+      ? 'https://remember-together-api.onrender.com/graphql'
+      : 'http://localhost:3001/graphql',
+  credentials: 'include',
 });
 
 // Auth middleware to attach token
@@ -49,7 +50,10 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/mood-tracker" element={<MoodTrackerPage />} /> {/* New route */}
                 <Route path="/healing-canvas" element={<HealingCanvas />} />
+                <Route path="/my-memories" element={<MemorySharing />} />
+                {/* Add other routes here */}
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/contact" element={<Contact />} />
