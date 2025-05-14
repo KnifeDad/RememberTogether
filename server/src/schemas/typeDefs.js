@@ -106,7 +106,7 @@ const typeDefs = gql`
 
 
 
-    imageUrl: String
+    media: [Media]
 
 
 
@@ -114,7 +114,95 @@ const typeDefs = gql`
 
 
 
+    category: String
+
+
+
+    reminder: Reminder
+
+
+
     user: User
+
+  }
+
+
+
+  type Media {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+
+
+    createdAt: String
+
+  }
+
+
+
+  input MediaInput {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+  }
+
+
+
+  type Reminder {
+
+    enabled: Boolean
+
+
+
+    date: String
+
+
+
+    type: String
+
+
+
+    lastNotified: String
 
   }
 
@@ -129,6 +217,24 @@ const typeDefs = gql`
     answer: String!
 
   }
+
+
+
+  input ReminderInput {
+
+    enabled: Boolean
+
+
+
+    date: String
+
+
+
+    type: String
+
+  }
+
+
 
   type TranscriptionResponse {
 
@@ -172,7 +278,7 @@ const typeDefs = gql`
 
 
 
-    login(username: String, email: String, password: String!): AuthPayload
+    login(email: String!, password: String!): AuthPayload
 
 
 
@@ -180,7 +286,19 @@ const typeDefs = gql`
 
 
 
-    addMemory(content: String, imageUrl: String): Memory
+    addMemory(
+
+      content: String
+
+      media: [MediaInput]
+
+      createdAt: String
+
+      category: String
+
+      reminder: ReminderInput
+
+    ): Memory
 
 
 

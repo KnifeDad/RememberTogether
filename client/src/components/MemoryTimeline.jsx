@@ -1,66 +1,109 @@
-import React, { useEffect, useState } from 'react';
-import { Box, VStack, Text, Icon, HStack, Tooltip } from '@chakra-ui/react';
+import React, { forwardRef } from 'react';
+import { Box, VStack, Text, Icon, HStack, Tooltip, Badge } from '@chakra-ui/react';
 import { BsCircleFill } from 'react-icons/bs';
+import { useQuery } from '@apollo/client';
+import { GET_ME } from '../utils/queries';
+
+const CircleFillWithRef = forwardRef((props, ref) => <BsCircleFill {...props} ref={ref} />);
+CircleFillWithRef.displayName = 'CircleFillWithRef';
+
+const categoryColors = {
+  Family: 'blue',
+  Travel: 'green',
+  Work: 'orange',
+  Personal: 'purple',
+  Health: 'teal',
+  Education: 'cyan',
+  Hobbies: 'pink',
+};
 
 const MemoryTimeline = () => {
-  const [memories, setMemories] = useState([]);
+  const { data, loading, error } = useQuery(GET_ME);
 
-  const loadMemories = () => {
-    const stored = JSON.parse(localStorage.getItem('memories')) || [];
-    setMemories(stored);
-  };
+  if (loading) {
+    return (
+      <Box textAlign="center" py={8}>
+        <Text>Loading memories...</Text>
+      </Box>
+    );
+  }
 
-  useEffect(() => {
-    loadMemories();
+  if (error) {
+    return (
+      <Box textAlign="center" py={8}>
+        <Text color="red.500">Error loading memories</Text>
+      </Box>
+    );
+  }
 
-    const handleStorageChange = () => {
-      loadMemories();
-    };
-
-    // Listen to changes in localStorage (for cross-tab updates)
-    window.addEventListener('storage', handleStorageChange);
-
-    // Fallback polling every 5 seconds (in case storage event doesn't trigger)
-    const interval = setInterval(() => {
-      loadMemories();
-    }, 5000);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
-    };
-  }, []);
+  const memories = data?.getMe?.memories || [];
 
   return (
-    <VStack align="stretch" spacing={4} pl={4} position="relative">
-      {memories.map((mem, index) => (
-        <HStack key={index} align="start" spacing={4} position="relative">
-          <Box position="relative">
-            <Icon as={BsCircleFill} color="purple.400" boxSize={3} mt={1} />
-            {index !== memories.length - 1 && (
-              <Box
+    <Box position="relative" py={8}>
+      <VStack spacing={8} align="stretch">
+        {memories.map((memory) => (
+          <Box
+            key={memory._id}
+            position="relative"
+            pl={8}
+            _before={{
+              content: '""',
+              position: 'absolute',
+              left: '0',
+              top: '0',
+              bottom: '0',
+              width: '2px',
+              bg: `${categoryColors[memory.category || 'Personal']}.200`,
+            }}
+          >
+            <Tooltip label={new Date(memory.createdAt).toLocaleString()}>
+              <Icon
+                as={CircleFillWithRef}
                 position="absolute"
-                top="10px"
-                left="6px"
-                width="1px"
-                height="calc(100% - 10px)"
-                bg="purple.200"
+                left="-4px"
+                top="0"
+                color={`${categoryColors[memory.category || 'Personal']}.500`}
+                boxSize={4}
               />
-            )}
-          </Box>
-          <Tooltip label={mem.content} placement="right" hasArrow>
-            <Box bg="purple.50" p={2} borderRadius="md" boxShadow="md" maxW="200px">
-              <Text fontSize="xs" color="gray.500">
-                {new Date(mem.createdAt).toLocaleString()}
-              </Text>
-              <Text noOfLines={2} fontSize="sm" mt={1}>
-                {mem.content}
-              </Text>
+            </Tooltip>
+            <Box
+              p={4}
+              bg="white"
+              borderRadius="md"
+              boxShadow="sm"
+              position="relative"
+              _hover={{ boxShadow: 'md' }}
+              borderLeft="4px solid"
+              borderColor={`${categoryColors[memory.category || 'Personal']}.500`}
+            >
+              <VStack align="start" spacing={2}>
+                <Text fontSize="sm" color="gray.500">
+                  {new Date(memory.createdAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </Text>
+                {memory.category && (
+                  <Badge
+                    colorScheme={categoryColors[memory.category]}
+                    px={2}
+                    py={1}
+                    borderRadius="md"
+                    fontSize="sm"
+                  >
+                    {memory.category}
+                  </Badge>
+                )}
+                <Text>{memory.content}</Text>
+              </VStack>
             </Box>
-          </Tooltip>
-        </HStack>
-      ))}
-    </VStack>
+          </Box>
+        ))}
+      </VStack>
+    </Box>
   );
 };
 
