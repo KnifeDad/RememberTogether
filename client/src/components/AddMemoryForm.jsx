@@ -9,30 +9,19 @@ import {
   Text,
   SimpleGrid,
   HStack,
+  Spinner,
 } from '@chakra-ui/react';
-import { useMutation } from '@apollo/client';
+import { useMutation, useLazyQuery } from '@apollo/client';
 import { ADD_MEMORY } from '../utils/mutation';
-import { GET_ME } from '../utils/queries';
+import { GET_MEMORIES } from '../utils/queries';
 
 const AddMemoryForm = () => {
   const [content, setContent] = useState('');
-  const [showLocalMemories, setShowLocalMemories] = useState(false);
-  const [localMemories, setLocalMemories] = useState([]);
   const toast = useToast();
 
-  const [addMemory, { loading }] = useMutation(ADD_MEMORY, {
-    refetchQueries: [{ query: GET_ME }],
+  // Mutation to add a new memory
+  const [addMemory, { loading: adding }] = useMutation(ADD_MEMORY, {
     onCompleted: () => {
-      const newMemory = {
-        content,
-        imageUrl: '',
-        createdAt: new Date().toISOString(),
-      };
-
-      const existing = JSON.parse(localStorage.getItem('memories')) || [];
-      existing.unshift(newMemory);
-      localStorage.setItem('memories', JSON.stringify(existing));
-
       setContent('');
       toast({
         title: 'Memory added.',
@@ -53,22 +42,14 @@ const AddMemoryForm = () => {
     },
   });
 
+  // Lazy query to fetch memories on button click
+  const [fetchMemories, { called, loading: fetching, data, error }] = useLazyQuery(GET_MEMORIES);
+  const userId = localStorage.getItem('userId'); // Assuming userId is stored in localStorage
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
     await addMemory({ variables: { content } });
-  };
-
-  const handleShowLocalMemories = () => {
-    const stored = JSON.parse(localStorage.getItem('memories')) || [];
-    setLocalMemories(stored);
-    setShowLocalMemories(true);
-  };
-
-  const handleDeleteMemory = (indexToDelete) => {
-    const updatedMemories = localMemories.filter((_, index) => index !== indexToDelete);
-    setLocalMemories(updatedMemories);
-    localStorage.setItem('memories', JSON.stringify(updatedMemories));
   };
 
   return (
@@ -104,7 +85,7 @@ const AddMemoryForm = () => {
               size="sm"
               colorScheme="purple"
               type="submit"
-              isLoading={loading}
+              isLoading={adding}
               loadingText="Saving..."
               width="90px"
             >
@@ -115,14 +96,52 @@ const AddMemoryForm = () => {
               size="sm"
               colorScheme="pink"
               variant="outline"
-              onClick={handleShowLocalMemories}
+              onClick={() => fetchMemories({ variables: { userId } })} // Trigger fetch
               width="90px"
+              isLoading={fetching}
+              loadingText="Fetching"
             >
               Fetch
             </Button>
           </HStack>
         </VStack>
       </Box>
+
+      {/* Display Fetched Memories */}
+      {called && (
+        <Box maxW="4xl" mx="auto" p={4}>
+          <Text fontSize="xl" mb={4} fontWeight="bold">
+            My Memories from DB
+          </Text>
+
+          {/* Show spinner while fetching */}
+          {fetching ? (
+            <Spinner />
+          ) : error ? (
+            // Show error message if there's an error while fetching
+            <Text color="red.500">Error: {error.message}</Text>
+          ) : (
+            // Display memories if fetched successfully
+            <SimpleGrid columns={[1, 2]} spacing={4}>
+              {data?.memories?.map((memory) => (
+                <Box
+                  key={memory._id}
+                  p={4}
+                  borderWidth="1px"
+                  borderRadius="lg"
+                  bg="gray.50"
+                  boxShadow="md"
+                >
+                  <Text>{memory.content}</Text>
+                  <Text fontSize="sm" color="gray.500" mt={2}>
+                    {new Date(memory.createdAt).toLocaleString()}
+                  </Text>
+                </Box>
+              ))}
+            </SimpleGrid>
+          )}
+        </Box>
+      )}
     </>
   );
 };

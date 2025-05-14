@@ -15,15 +15,12 @@ export const GET_ME = gql`
   }
 `;
 export const GET_MEMORIES = gql`
-  query Memories {
-    memories {
+  query GetMemories($userId: ID!) {
+    getMemories(userId: $userId) {
       _id
       content
       imageUrl
       createdAt
-      user {
-        userId
-      }
     }
   }
 `;
@@ -52,6 +49,18 @@ export const GET_MY_MOODS = gql`
       chores {
         question1
         question2
+      }
+    }
+  }
+`;
+export const GET_GROUPS = gql`
+  query GetGroups {
+    groups {
+      _id
+      name
+      members {
+        _id
+        username
       }
     }
   }

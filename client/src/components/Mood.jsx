@@ -9,11 +9,13 @@ import {
   Collapse,
   useToast,
   Icon,
+  Flex,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { useMutation } from '@apollo/client';
 import { SAVE_MOOD } from '../utils/mutation';
 
+// Categories and their options
 const categories = [
   {
     name: 'Health',
@@ -69,10 +71,36 @@ const gradient = {
   accent: 'linear(to-r, purple.400, pink.400)',
 };
 
+// Score Mapping
+const scoreMapping = {
+  Energetic: 5,
+  'Well-rested': 4,
+  Tired: 2,
+  Sick: 1,
+  Very: 5,
+  Somewhat: 4,
+  'Not much': 2,
+  'Burnt out': 1,
+  Connected: 5,
+  Supported: 4,
+  Lonely: 2,
+  Ignored: 1,
+  Happy: 5,
+  Calm: 4,
+  Anxious: 2,
+  Sad: 1,
+  'All done': 5,
+  Some: 4,
+  None: 2,
+  Avoided: 1,
+};
+
 const MoodTracker = () => {
   const toast = useToast();
   const [responses, setResponses] = useState({});
   const [expanded, setExpanded] = useState(null);
+  const [score, setScore] = useState(null);
+  const [summary, setSummary] = useState('');
 
   const [saveMood, { loading }] = useMutation(SAVE_MOOD, {
     onCompleted: () => {
@@ -95,6 +123,7 @@ const MoodTracker = () => {
     },
   });
 
+  // Handle selecting an option
   const handleSelect = (cat, q, option) => {
     setResponses((prev) => ({
       ...prev,
@@ -102,27 +131,72 @@ const MoodTracker = () => {
     }));
   };
 
+  // Calculate score and summary based on the responses
+  const calculateMoodScore = () => {
+    let totalScore = 0;
+    let statement = '';
+
+    // Sum up the score based on selected responses
+    for (const key in responses) {
+      const answer = responses[key];
+      totalScore += scoreMapping[answer];
+
+      // Create summary based on the score range
+      if (totalScore >= 20) {
+        statement = 'You are feeling great!';
+      } else if (totalScore >= 15) {
+        statement = 'You are doing well, but could use some improvement.';
+      } else if (totalScore >= 10) {
+        statement = 'You seem a bit down. Consider some self-care.';
+      } else {
+        statement = 'You may be feeling low. Take time to relax and recharge or talk to Kristyn.AI';
+      }
+    }
+
+    setScore(totalScore);
+    setSummary(statement);
+  };
+
+  // Handle submitting the form
   const handleSubmit = () => {
-    const formatted = Object.entries(responses).map(([key, answer]) => {
+    if (Object.keys(responses).length === 0) {
+      toast({
+        title: 'No responses',
+        description: 'Please answer all questions.',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const input = {};
+
+    // Organize responses into categories
+    for (const key in responses) {
       const [category, ...questionParts] = key.split('_');
       const question = questionParts.join('_');
-      return { category, question, answer };
-    });
-    saveMood({ variables: { responses: formatted } });
+      const answer = responses[key];
+
+      input[category.toLowerCase()] = { question, answer };
+    }
+
+    saveMood({ variables: { input } });
+    calculateMoodScore();
   };
 
   return (
-    <Box p={8} maxW="850px" mx="auto" bg="white" borderRadius="2xl" boxShadow="xl" mt={10}>
-      <Heading size="lg" textAlign="center" mb={6} bgGradient={gradient.accent} bgClip="text">
-        Mood Tracker
-      </Heading>
-      <VStack spacing={6} align="stretch">
+    <Flex p={4} maxW="700px" mx="auto" bg="white" borderRadius="lg" boxShadow="md" mt={8}>
+      <VStack spacing={4} align="stretch" flex="1">
+        <Heading size="lg" textAlign="center" mb={4} bgGradient={gradient.accent} bgClip="text">
+          Mood Tracker
+        </Heading>
         {categories.map((cat, index) => (
           <Box key={cat.name} borderWidth="1px" borderRadius="lg" p={4} bg="gray.50" boxShadow="md">
             <Button
               variant="ghost"
               fontWeight="bold"
-              fontSize="lg"
+              fontSize="md"
               width="full"
               justifyContent="space-between"
               onClick={() => setExpanded(index === expanded ? null : index)}
@@ -183,7 +257,34 @@ const MoodTracker = () => {
           Save Mood
         </Button>
       </VStack>
-    </Box>
+
+      {/* Summary Section */}
+      <Box
+        p={4}
+        maxW="300px"
+        mx={4}
+        bg="gray.50"
+        borderRadius="lg"
+        boxShadow="md"
+        textAlign="center"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+      >
+        <Heading size="md" mb={4}>
+          Your Mood Summary
+        </Heading>
+        <Text fontSize="lg" mb={2}>
+          Score: {score}
+        </Text>
+        <Text
+          fontSize="md"
+          color={score >= 15 ? 'green.500' : score >= 10 ? 'yellow.500' : 'red.500'}
+        >
+          {summary}
+        </Text>
+      </Box>
+    </Flex>
   );
 };
 

@@ -7,6 +7,7 @@ import { SpeechClient } from '@google-cloud/speech';
 import User from '../models/User.js';
 import Mood from '../models/Mood.js'; // Import Mood model
 import Memory from '../models/memory.js'; // Import Memory model
+import Group from '../models/Group.js'; // Import Group model
 import { signToken } from '../utils/auth.js';
 import OpenAI from 'openai';
 
@@ -41,12 +42,19 @@ const resolvers = {
 
       throw new Error('You need to be logged in!');
     },
-
+    memories: async (_, { userId }, context) => {
+      try {
+        return await Memory.find({ user: userId }).sort({ createdAt: -1 }).populate('user');
+      } catch (err) {
+        throw new Error('Failed to fetch memories');
+      }
+    },
   
     getMyMoods: async (_, __, context) => {
       if (!context.user) throw new Error('Not authenticated');
       return await Mood.find({ user: context.user._id }).sort({ createdAt: -1 });
     },
+    groups: async () => await Group.find().populate('members'),
   },
 
   Mutation: {
@@ -172,18 +180,51 @@ const resolvers = {
     },
 
   
-   saveMood: async (_, { input }, context) => {
+    saveMood: async (_, { input }, context) => {
       if (!context.user) throw new Error('Not authenticated');
-
+    
+      const responses = Object.entries(input).map(([category, { question, answer }]) => ({
+        category,
+        question,
+        answer,
+      }));
+    
       const newMood = await Mood.create({
-        ...input,
         user: context.user._id,
+        responses,
       });
-
+    
       return newMood;
     },
-  
-
+    createGroup: async (_, { name }) => {
+      return await Group.create({ name, members: [] });
+    },
+    // Add a member to a group
+    joinGroup: async (_, { groupId }, { user }) => {
+      if (!user) throw new Error("Not authenticated");
+      
+      const group = await Group.findById(groupId);
+      if (!group) throw new Error("Group not found");
+    
+      if (!group.members.includes(user._id)) {
+        group.members.push(user._id);
+        await group.save();
+      }
+    
+      return await group.populate('members');
+    },
+    // Delete a group
+    deleteGroup: async (_, { groupId }, context) => {
+      if (!context.user) throw new AuthenticationError('Not logged in');
+      const group = await Group.findById(groupId);
+      if (!group) throw new Error('Group not found');
+      if (!group.members.includes(context.user._id)) {
+        throw new Error('You are not a member of this group');
+      }
+      await Group.findByIdAndDelete(groupId);
+      return group;
+    },
+    // Add a memory
     addMemory: async (_parent, { content, imageUrl }, context) => {
       if (context.user) {
         const memory = await Memory.create({
