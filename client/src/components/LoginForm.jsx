@@ -25,6 +25,7 @@ function LoginForm({ onLoginSuccess }) {
 
   const [loginUser, { loading }] = useMutation(LOGIN_USER, {
     onCompleted: ({ login: loginData }) => {
+      console.log('Login successful:', loginData);
       const { token, user } = loginData;
       localStorage.setItem('id_token', token);
       localStorage.setItem('user', JSON.stringify(user));
@@ -32,6 +33,7 @@ function LoginForm({ onLoginSuccess }) {
       if (onLoginSuccess) onLoginSuccess();
     },
     onError: (err) => {
+      console.error('Login error:', err);
       setErrorMessage(err.message);
     },
   });
@@ -44,7 +46,13 @@ function LoginForm({ onLoginSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-    await loginUser({ variables: formState });
+    console.log('Attempting login with:', formState);
+    try {
+      const result = await loginUser({ variables: formState });
+      console.log('Login result:', result);
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   const inputBg = useColorModeValue('white', 'gray.700');

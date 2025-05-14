@@ -43,7 +43,14 @@ const startApolloServer = async () => {
   app.use(
     '/graphql',
     expressMiddleware(server, {
-      context: async ({ req }) => await authenticateToken({ req }),
+      context: async ({ req }) => {
+        // Skip authentication for login and createUser mutations
+        const operation = req.body.operationName;
+        if (operation === 'login' || operation === 'CreateUser') {
+          return { req };
+        }
+        return await authenticateToken({ req });
+      },
     })
   );
 
