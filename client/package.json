@@ -4,10 +4,12 @@
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.13.8",
+    "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "apollo-upload-client": "^17.0.0",
+    "fabric": "^6.6.4",
     "framer-motion": "^10.16.4",
     "graphql": "^16.11.0",
     "jwt-decode": "^3.1.2",
@@ -17,7 +19,9 @@
     "react-icons": "^4.12.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.15.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "react-slick": "^0.30.3",
+    "slick-carousel": "^1.8.1"
   },
   "scripts": {
     "start": "react-scripts start",

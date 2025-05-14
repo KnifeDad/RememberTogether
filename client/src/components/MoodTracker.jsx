@@ -4,8 +4,8 @@ import { Box, Select, Button } from '@chakra-ui/react';
 const MoodTracker = () => {
   const [mood, setMood] = useState('');
 
-  const handleMoodChange = e => setMood(e.target.value);
-  const handleSubmit = e => {
+  const handleMoodChange = (e) => setMood(e.target.value);
+  const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Mood:', mood);
     setMood('');

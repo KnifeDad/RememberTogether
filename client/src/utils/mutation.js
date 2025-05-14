@@ -40,3 +40,69 @@ export const GET_TEXT_RESPONSE = gql`
     generateTextResponse(text: $text)
   }
 `;
+
+export const ADD_MEMORY = gql`
+  mutation AddMemory(
+    $content: String
+    $media: [MediaInput]
+    $createdAt: String
+    $category: String
+    $reminder: ReminderInput
+  ) {
+    addMemory(
+      content: $content
+      media: $media
+      createdAt: $createdAt
+      category: $category
+      reminder: $reminder
+    ) {
+      _id
+      content
+      media {
+        type
+        url
+        thumbnailUrl
+        duration
+        size
+        mimeType
+        createdAt
+      }
+      createdAt
+      category
+      reminder {
+        enabled
+        date
+        type
+        lastNotified
+      }
+    }
+  }
+`;
+export const DELETE_MEMORY = gql`
+  mutation DeleteMemory($id: ID!) {
+    deleteMemory(id: $id)
+  }
+`;
+
+export const SAVE_MOOD = gql`
+  mutation SaveMood(
+    $health: MoodCategoryInput!
+    $work: MoodCategoryInput!
+    $social: MoodCategoryInput!
+    $emotional: MoodCategoryInput!
+    $chores: MoodCategoryInput!
+  ) {
+    saveMood(
+      input: {
+        health: $health
+        work: $work
+        social: $social
+        emotional: $emotional
+        chores: $chores
+      }
+    ) {
+      _id
+      createdAt
+    }
+  }
+`;
