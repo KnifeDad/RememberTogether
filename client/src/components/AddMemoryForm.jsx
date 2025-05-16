@@ -19,7 +19,7 @@ import {
   Icon,
   Flex,
 } from '@chakra-ui/react';
-import { useMutation} from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { ADD_MEMORY } from '../utils/mutation';
 import { GET_ME } from '../utils/queries';
 import { FaClock, FaImage, FaVideo, FaMusic, FaTrash } from 'react-icons/fa';
@@ -153,6 +153,18 @@ const AddMemoryForm = () => {
         reminder: reminderData,
       },
     });
+  };
+
+  const handleShowLocalMemories = () => {
+    const stored = JSON.parse(localStorage.getItem('memories')) || [];
+    setLocalMemories(stored);
+    setShowLocalMemories(true);
+  };
+
+  const handleDeleteMemory = (indexToDelete) => {
+    const updatedMemories = localMemories.filter((_, index) => index !== indexToDelete);
+    setLocalMemories(updatedMemories);
+    localStorage.setItem('memories', JSON.stringify(updatedMemories));
   };
 
   return (

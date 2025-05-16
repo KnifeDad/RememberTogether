@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Flex, Heading, Divider } from '@chakra-ui/react';
 import AddMemoryForm from '../components/AddMemoryForm';
-
+import MemoryList from '../components/MemoryList';
 import MemoryTimeline from '../components/MemoryTimeline';
 
 const MemorySharing = () => {
@@ -11,6 +11,9 @@ const MemorySharing = () => {
       <Box flex="3" mr={[0, 0, 6]}>
         <Heading mb={6}>Add & View Memories</Heading>
         <AddMemoryForm />
+        <Box mt={10}>
+          <MemoryList />
+        </Box>
       </Box>
 
       {/* Divider for desktop view */}
