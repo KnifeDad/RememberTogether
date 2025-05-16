@@ -18,6 +18,8 @@ To provide a safe, supportive space where you can:
 
 Visit our live application at: [RememberTogether](https://remember-together.onrender.com)
 
+![RememberTogether Screenshot](./assets/Remember-Together.png)
+
 ## Features
 
 ### Memory Sharing 📚
@@ -113,6 +115,8 @@ This project was created with love and understanding by a team who knows that gr
 ## Acknowledgments 🙏
 
 This project is dedicated to Kristyn Ricketts, who lost her courageous battle with Stage 4 breast cancer. Her strength, grace, and love continue to inspire us every day. The AI assistant in our application is named in her honor, carrying forward her spirit of compassion and understanding.
+
+In memory of Khair Muhammad, loving uncle to Muhsina Shinwari and in memory of Mr. Lowery, loving father to Maurice Lowery.
 
 To all our loved ones who have passed on - your memories live on in our hearts and in the stories we share. You are not forgotten.
 
