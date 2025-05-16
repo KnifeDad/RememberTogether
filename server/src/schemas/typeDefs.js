@@ -1,107 +1,44 @@
 import { gql } from 'apollo-server-express';
 
-
-
 const typeDefs = gql`
 
   scalar Upload
 
-
-
   type User {
-
     _id: ID!
-
-
-
     username: String!
-
-
-
     email: String!
-
-
-
     password: String!
-
-
-
     memories: [Memory]
-
   }
-
-
 
   input UserInput {
-
     username: String!
-
-
-
     email: String!
-
-
-
     password: String!
-
   }
-
-
 
   type AuthPayload {
-
     token: String!
-
-
-
     user: User!
-
   }
-
-
 
   type MoodResponse {
-
     category: String!
-
-
-
     question: String!
-
-
-
     answer: String!
-
   }
-
-
 
   type Mood {
-
     _id: ID!
-
-
-
     user: ID!
-
-
-
     responses: [MoodResponse!]!
-
-
-
     createdAt: String!
-
   }
-
 
 
   type Memory {
-
     _id: ID!
-
-
-
     content: String
 
 
@@ -123,6 +60,89 @@ const typeDefs = gql`
 
 
     user: User
+  }
+
+  input MoodCategoryInput {
+    question: String!
+    answer: String!
+  }
+
+
+  type Media {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+
+
+    createdAt: String
+
+  }
+
+
+
+  input MediaInput {
+
+    type: String!
+
+
+
+    url: String!
+
+
+
+    thumbnailUrl: String
+
+
+
+    duration: Float
+
+
+
+    size: Float
+
+
+
+    mimeType: String
+
+  }
+
+
+
+  type Reminder {
+
+    enabled: Boolean
+
+
+
+    date: String
+
+
+
+    type: String
+
+
+
+    lastNotified: String
 
   }
 
@@ -208,17 +228,18 @@ const typeDefs = gql`
 
 
 
-  input MoodResponseInput {
-
-    category: String!
-
+  input MoodCategoryInput {
     question: String!
-
     answer: String!
-
   }
 
-
+  input MoodInput {
+    health: MoodCategoryInput!
+    work: MoodCategoryInput!
+    social: MoodCategoryInput!
+    emotional: MoodCategoryInput!
+    chores: MoodCategoryInput!
+  }
 
   input ReminderInput {
 
@@ -237,43 +258,23 @@ const typeDefs = gql`
 
 
   type TranscriptionResponse {
-
     transcript: String
-
-
-
     supportiveResponse: String
-
   }
-
-
-
+  type Group {
+    _id: ID!
+    name: String!
+    members: [User!]!
+  }
   type Query {
-
     getSingleUser(id: ID, username: String): User
-
-
-
     getMe: User
-
-
-
     getMyMoods: [Mood]
-
-
-
-    memories: [Memory]
-
-
-
-    memory(id: ID!): Memory
-
+    memories(id: ID!): Memory
+    groups: [Group!]!
   }
-
-
 
   type Mutation {
-
     createUser(input: UserInput!): AuthPayload
 
 
@@ -282,7 +283,7 @@ const typeDefs = gql`
 
 
 
-    saveMood(responses: [MoodResponseInput!]!): Mood
+    saveMood(input: MoodInput!): Mood
 
 
 
@@ -304,19 +305,13 @@ const typeDefs = gql`
 
     deleteMemory(id: ID!): Boolean
 
-
-
     generateTextResponse(text: String!): String
-
-
-
     transcribeAudio(audio: Upload!): TranscriptionResponse
-
+    createGroup(name: String!): Group!
+    joinGroup(groupId: ID!): Group!
+    deleteGroup(groupId: ID!): Group
   }
 
 `;
 
-
-
 export default typeDefs;
-

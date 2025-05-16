@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_ME } from '../utils/queries';
-import { DELETE_MEMORY } from '../utils/mutations';
+import { DELETE_MEMORY } from '../utils/mutation';
 import {
   Box,
   Text,

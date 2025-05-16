@@ -14,7 +14,7 @@ import {
   Heading,
 } from '@chakra-ui/react'; // Import Drawer components
 import { BsStars } from 'react-icons/bs';
-import { FaPaintBrush, FaSmileBeam } from 'react-icons/fa';
+import { FaAddressBook, FaPaintBrush, FaSmileBeam } from 'react-icons/fa';
 import { FaCameraRetro } from 'react-icons/fa';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -59,6 +59,20 @@ function Header() {
         <Flex align="center" gap={4}>
           {/* Mood Tracker */}
           <MoodTracker />
+          <Button
+            as={RouterLink}
+            to="/community"
+            leftIcon={<FaAddressBook />}
+            colorScheme="purple"
+            variant="solid"
+            size="md"
+            bgGradient="linear(to-r, purple.500, pink.500)"
+            _hover={{
+              bgGradient: 'linear(to-r, purple.600, pink.600)',
+            }}
+          >
+            Community
+          </Button>
           <Button
             as={RouterLink}
             to="/my-mood"
@@ -159,22 +173,48 @@ function Header() {
       {/* Chat Drawer */}
       <Drawer isOpen={isChatOpen} placement="right" onClose={onChatClose} size="md">
         <DrawerOverlay />
-        <DrawerContent bg="white">
-          <DrawerCloseButton />
-          <Box p={4} bg="white" borderBottom="1px solid" borderColor="gray.200" position="relative">
-            <Heading
-              as="h2"
-              size="md"
-              textAlign="center"
-              bgGradient="linear(to-r, purple.600, pink.600)"
-              bgClip="text"
-            >
-              Kristyn.AI
-            </Heading>
+        <DrawerContent
+          bgGradient="linear(to-b, pink.50, purple.50)"
+          borderRadius="lg"
+          boxShadow="2xl"
+          overflow="hidden"
+        >
+          <DrawerCloseButton
+            top={4}
+            right={4}
+            color="gray.600"
+            _hover={{ color: 'purple.500', transform: 'scale(1.1)' }}
+          />
+
+          {/* Header with icon and text */}
+          <Box
+            py={5}
+            px={4}
+            borderBottom="1px solid"
+            borderColor="gray.200"
+            bgGradient="linear(to-r, purple.500, pink.400)"
+          >
+            <Flex justify="center" align="center" gap={2}>
+              <BsStars size={24} color="white" />
+              <Heading as="h2" size="md" color="white">
+                Kristyn.AI
+              </Heading>
+            </Flex>
           </Box>
-          <DrawerBody p={0} bg="#FEB2B2">
-            {/* ChatUI Component for chat functionality */}
-            <ChatUI />
+
+          {/* Body with smooth scroll and elegant bg */}
+          <DrawerBody
+            p={0}
+            bg="whiteAlpha.900"
+            overflowY="auto"
+            sx={{
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
+            }}
+          >
+            <Box p={4}>
+              <ChatUI />
+            </Box>
           </DrawerBody>
         </DrawerContent>
       </Drawer>

@@ -110,47 +110,60 @@ export default function ChatUI() {
   };
 
   return (
-    <Flex direction="column" maxW="600px" mx="auto" p={4} h="90vh">
+    <Flex
+      direction="column"
+      maxW="600px"
+      mx="auto"
+      p={4}
+      h="90vh"
+      bgGradient="linear(to-b, pink.50, purple.50)"
+      borderRadius="xl"
+      boxShadow="lg"
+    >
+      {/* Chat messages area */}
       <Box
         flex="1"
         p={4}
         overflowY="auto"
-        border="1px solid"
-        borderColor={useColorModeValue('gray.200', 'gray.600')}
-        borderRadius="lg"
-        bg={useColorModeValue('white', 'gray.800')}
+        borderRadius="xl"
+        bg="whiteAlpha.800"
+        backdropFilter="blur(10px)"
+        boxShadow="md"
       >
-        <VStack spacing={3} align="stretch">
+        <VStack spacing={4} align="stretch">
           {messages.map((msg, idx) => (
             <Box
               key={idx}
               alignSelf={msg.sender === 'user' ? 'flex-end' : 'flex-start'}
-              bg={
-                msg.sender === 'bot' && msg.escalation
-                  ? 'red.100'
-                  : msg.sender === 'bot'
-                    ? 'gray.100'
-                    : 'blue.100'
+              bgGradient={
+                msg.sender === 'bot'
+                  ? msg.escalation
+                    ? 'linear(to-r, red.100, pink.100)'
+                    : 'linear(to-r, gray.100, gray.200)'
+                  : 'linear(to-r, blue.100, blue.200)'
               }
               borderLeft={msg.sender === 'bot' && msg.escalation ? '4px solid red' : undefined}
-              borderRadius="md"
-              p={3}
-              maxW="70%"
-              shadow="sm"
+              borderRadius="2xl"
+              p={4}
+              maxW="75%"
+              boxShadow="sm"
+              transition="all 0.2s ease"
             >
               {msg.sender === 'bot' ? (
                 <ReactMarkdown>{msg.text}</ReactMarkdown>
               ) : (
-                <Text fontSize="sm">{msg.text}</Text>
+                <Text fontSize="sm" color="gray.800">
+                  {msg.text}
+                </Text>
               )}
               {msg.tone !== undefined && (
-                <Text fontSize="xs" color="gray.500" mt={1}>
-                  Tone score: {msg.tone.toFixed(2)}
+                <Text fontSize="xs" color="gray.500" mt={2}>
+                  🎭 Tone score: <strong>{msg.tone.toFixed(2)}</strong>
                 </Text>
               )}
               {msg.escalation && (
-                <Text fontSize="xs" fontWeight="bold" color="red.600">
-                  May need professional support.
+                <Text fontSize="xs" fontWeight="semibold" color="red.600" mt={1}>
+                  ⚠️ This message may need professional support.
                 </Text>
               )}
             </Box>
@@ -158,25 +171,56 @@ export default function ChatUI() {
         </VStack>
       </Box>
 
-      <HStack mt={4}>
+      {/* Input bar */}
+      <HStack
+        mt={4}
+        spacing={2}
+        bg="whiteAlpha.800"
+        p={3}
+        borderRadius="xl"
+        backdropFilter="blur(10px)"
+        boxShadow="sm"
+      >
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type or record..."
+          placeholder="Type or record your thoughts..."
           bg="white"
-          borderColor="gray.200"
+          borderColor="gray.300"
+          borderRadius="md"
+          _focus={{ borderColor: 'blue.400', boxShadow: 'sm' }}
         />
         <IconButton
           aria-label="Send message"
           icon={<FaPaperPlane />}
           onClick={handleSend}
-          colorScheme="blue"
+          colorScheme="purple"
+          variant="solid"
+          isDisabled={!input.trim()}
+          bgGradient="linear(to-r, purple.500, pink.500)"
+          _hover={{
+            bgGradient: 'linear(to-r, purple.600, pink.600)',
+            color: 'white',
+          }}
+          _disabled={{
+            bgGradient: 'linear(to-r, purple.300, pink.300)',
+            color: 'gray.400',
+          }}
         />
+
         <IconButton
           aria-label="Record voice"
           icon={<FaMicrophone />}
           onClick={handleRecord}
-          colorScheme={recording ? 'red' : 'gray'}
+          colorScheme={recording ? 'red' : 'purple'}
+          variant="ghost"
+          bg={recording ? 'red.100' : 'purple.100'}
+          _hover={{
+            bg: recording ? 'red.200' : 'purple.200',
+          }}
+          _active={{
+            bg: recording ? 'red.300' : 'purple.300',
+          }}
         />
       </HStack>
     </Flex>

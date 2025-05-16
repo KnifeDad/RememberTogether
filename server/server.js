@@ -20,6 +20,7 @@ const server = new ApolloServer({
   resolvers,
   csrfPrevention: true,
   cache: 'bounded',
+  uploads: false,
 });
 
 const startApolloServer = async () => {
@@ -27,15 +28,17 @@ const startApolloServer = async () => {
 
   const app = express();
 
-  // Configure CORS for both development and production
-  app.use(cors({ 
-    origin: ['https://remember-together.onrender.com', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
+  // ✅ Updated CORS setup to include apollo-require-preflight
+  app.use(
+    cors({
+      origin: ['https://remember-together.onrender.com', 'http://localhost:3000'],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'apollo-require-preflight'],
+    })
+  );
 
-  // Important: Upload middleware must come before expressMiddleware
+  // Upload middleware must come before expressMiddleware
   app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 1 }));
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
@@ -44,7 +47,6 @@ const startApolloServer = async () => {
     '/graphql',
     expressMiddleware(server, {
       context: async ({ req }) => {
-        // Skip authentication for login and createUser mutations
         const operation = req.body.operationName;
         if (operation === 'login' || operation === 'CreateUser') {
           return { req };

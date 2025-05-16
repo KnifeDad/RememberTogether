@@ -1,8 +1,10 @@
 import React from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ApolloProvider, ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { createUploadLink } from 'apollo-upload-client';
+
 import Layout from './components/layout/Layout';
 import { AuthProvider } from './context/AuthContext';
 import HealingCanvas from './components/HealingCanvas';
@@ -13,17 +15,23 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Contact from './pages/Contact';
 import Features from './pages/Features';
+import CommunityPage from './pages/CreateGroup';
+
 import './styles.css';
 
-const uploadLink = createHttpLink({
+// Upload link that handles both regular and file upload GraphQL operations
+
+const uploadLink = createUploadLink({
   uri:
     process.env.NODE_ENV === 'production'
       ? 'https://remember-together-api.onrender.com/graphql'
       : 'http://localhost:3001/graphql',
-  credentials: 'include',
+  headers: {
+    'Apollo-Require-Preflight': 'true',
+  },
 });
 
-// Auth middleware to attach token
+// Auth middleware
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
   const token = localStorage.getItem('id_token');
@@ -37,7 +45,7 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-// Apollo Client setup
+// Apollo Client with auth and upload link
 const client = new ApolloClient({
   link: authLink.concat(uploadLink),
   cache: new InMemoryCache(),
@@ -60,7 +68,7 @@ function App() {
                 <Route path="/my-mood" element={<MoodTracker />} />
                 <Route path="/healing-canvas" element={<HealingCanvas />} />
                 <Route path="/my-memories" element={<MemorySharing />} />
-                {/* Add other routes here */}
+                <Route path="/community" element={<CommunityPage />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/contact" element={<Contact />} />

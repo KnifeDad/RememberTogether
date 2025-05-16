@@ -85,24 +85,36 @@ export const DELETE_MEMORY = gql`
 `;
 
 export const SAVE_MOOD = gql`
-  mutation SaveMood(
-    $health: MoodCategoryInput!
-    $work: MoodCategoryInput!
-    $social: MoodCategoryInput!
-    $emotional: MoodCategoryInput!
-    $chores: MoodCategoryInput!
-  ) {
-    saveMood(
-      input: {
-        health: $health
-        work: $work
-        social: $social
-        emotional: $emotional
-        chores: $chores
-      }
-    ) {
+  mutation SaveMood($input: MoodInput!) {
+    saveMood(input: $input) {
       _id
       createdAt
+    }
+  }
+`;
+
+export const CREATE_GROUP = gql`
+  mutation CreateGroup($name: String!) {
+    createGroup(name: $name) {
+      _id
+      name
+    }
+  }
+`;
+
+export const JOIN_GROUP = gql`
+  mutation JoinGroup($groupId: ID!) {
+    joinGroup(groupId: $groupId) {
+      _id
+      name
+    }
+  }
+`;
+export const DELETE_GROUP = gql`
+  mutation DeleteGroup($groupId: ID!) {
+    deleteGroup(groupId: $groupId) {
+      _id
+      name
     }
   }
 `;
