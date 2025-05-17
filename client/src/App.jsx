@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChakraProvider } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
@@ -16,6 +16,8 @@ import TermsOfService from './pages/TermsOfService';
 import Contact from './pages/Contact';
 import Features from './pages/Features';
 import CommunityPage from './pages/CreateGroup';
+import About from './pages/About';
+import DedicationModal from './components/DedicationModal';
 
 import './styles.css';
 
@@ -57,6 +59,13 @@ const client = new ApolloClient({
 });
 
 function App() {
+  const [showDedication, setShowDedication] = useState(true);
+
+  useEffect(() => {
+    // Show modal on every app load
+    setShowDedication(true);
+  }, []);
+
   return (
     <ApolloProvider client={client}>
       <ChakraProvider>
@@ -73,10 +82,12 @@ function App() {
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/features" element={<Features />} />
+                <Route path="/about" element={<About />} />
               </Routes>
             </Layout>
           </Router>
         </AuthProvider>
+        <DedicationModal isOpen={showDedication} onClose={() => setShowDedication(false)} />
       </ChakraProvider>
     </ApolloProvider>
   );

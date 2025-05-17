@@ -18,6 +18,7 @@ import {
   Tooltip,
   Button,
   useToast,
+  VStack,
 } from '@chakra-ui/react';
 import {
   FaPencilAlt,
@@ -507,10 +508,11 @@ const HealingCanvas = () => {
         borderRadius="md"
         boxShadow="sm"
         mb={4}
-        wrap="wrap"
-        gap={2}
+        direction={{ base: 'column', md: 'row' }}
+        gap={4}
+        align={{ base: 'stretch', md: 'center' }}
       >
-        <HStack spacing={2}>
+        <HStack spacing={2} wrap="wrap" w={{ base: 'full', md: 'auto' }}>
           <IconButton
             icon={<FaPencilAlt />}
             onClick={() => handleToolSelect('pencil')}
@@ -557,8 +559,8 @@ const HealingCanvas = () => {
           <IconButton icon={<FaRedo />} onClick={handleRedo} colorScheme="gray" aria-label="Redo" />
         </HStack>
 
-        <HStack spacing={4} ml={4}>
-          <Box w="200px">
+        <HStack spacing={4} ml={{ base: 0, md: 4 }} w={{ base: 'full', md: 'auto' }}>
+          <Box w={{ base: 'full', md: '200px' }}>
             <Text mb={2}>Brush Size: {brushSize}</Text>
             <Slider value={brushSize} onChange={setBrushSize} min={1} max={50} step={1}>
               <SliderTrack>
@@ -567,6 +569,7 @@ const HealingCanvas = () => {
               <SliderThumb />
             </Slider>
           </Box>
+
           <Popover placement="bottom">
             <PopoverTrigger>
               <IconButton
@@ -579,7 +582,7 @@ const HealingCanvas = () => {
               />
             </PopoverTrigger>
             <PopoverContent width="300px">
-              <PopoverBody p={4}>
+              <PopoverBody>
                 <Text mb={2} fontWeight="bold">
                   Emotion Colors
                 </Text>
@@ -624,7 +627,7 @@ const HealingCanvas = () => {
           </Popover>
         </HStack>
 
-        <HStack spacing={2} ml="auto">
+        <HStack spacing={2} ml={{ base: 0, md: 'auto' }} w={{ base: 'full', md: 'auto' }}>
           <IconButton
             icon={<FaSave />}
             onClick={saveDrawing}
@@ -647,7 +650,7 @@ const HealingCanvas = () => {
         borderRadius="md"
         overflow="hidden"
         width="100%"
-        height="calc(100vh - 200px)"
+        height={{ base: 'calc(100vh - 300px)', md: 'calc(100vh - 200px)' }}
         minHeight="600px"
         bg="white"
       >
